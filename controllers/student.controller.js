@@ -1,0 +1,116 @@
+// controllers/student.controller.js
+
+const { Student } = require("../models");
+
+// שליפת כל הסטודנטים
+exports.getAllStudents = async (req, res) => {
+    try {
+        const students = await Student.findAll({
+            include: [
+                { model: TypeGender, as: "gender" },
+                { model: Parent, as: "father" },
+                { model: Parent, as: "mother" },
+                { model: City, as: "city" },
+                { model: Worker, as: "worker" },
+                { model: TypeActivityState, as: "activity_status" },
+                { model: TypeRisk, as: "risk" },
+                { model: Synagogue, as: "synagogue" },
+                { model: Frequency, as: "frequency" }
+            ]
+        });
+        res.json(students);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching students" });
+    }
+};
+
+// הוספת סטודנט חדש
+exports.addStudent = async (req, res) => {
+    try {
+        const student = await Student.create(req.body);
+        res.status(201).json(student);
+    } catch (error) {
+        res.status(500).json({ error: "Error adding student" });
+    }
+};
+
+// עדכון פרטי סטודנט
+exports.updateStudent = async (req, res) => {
+    try {
+        const { St_code } = req.params;
+        const {
+            St_ID,
+            St_gender,
+            St_name,
+            St_Fname,
+            St_image,
+            St_birthday,
+            St_father_code,
+            St_mother_code,
+            St_city_code,
+            St_address,
+            St_cell_phone,
+            St_phone,
+            St_email,
+            St_worker_code,
+            St_activity_status,
+            St_risk_code,
+            St_description_reception_status,
+            St_contact,
+            St_contact_phone,
+            St_requester,
+            St_socioeconomic_status,
+            St_code_synagogue,
+            St_code_frequency,
+            St_amount_frequency
+        } = req.body;
+
+        const student = await Student.findByPk(St_code);
+        if (!student) return res.status(404).json({ error: "Student not found" });
+
+        // עדכון השדות של הסטודנט
+        student.St_ID = St_ID;
+        student.St_gender = St_gender;
+        student.St_name = St_name;
+        student.St_Fname = St_Fname;
+        student.St_image = St_image;
+        student.St_birthday = St_birthday;
+        student.St_father_code = St_father_code;
+        student.St_mother_code = St_mother_code;
+        student.St_city_code = St_city_code;
+        student.St_address = St_address;
+        student.St_cell_phone = St_cell_phone;
+        student.St_phone = St_phone;
+        student.St_email = St_email;
+        student.St_worker_code = St_worker_code;
+        student.St_activity_status = St_activity_status;
+        student.St_risk_code = St_risk_code;
+        student.St_description_reception_status = St_description_reception_status;
+        student.St_contact = St_contact;
+        student.St_contact_phone = St_contact_phone;
+        student.St_requester = St_requester;
+        student.St_socioeconomic_status = St_socioeconomic_status;
+        student.St_code_synagogue = St_code_synagogue;
+        student.St_code_frequency = St_code_frequency;
+        student.St_amount_frequency = St_amount_frequency;
+
+        await student.save();
+        res.json(student);
+    } catch (error) {
+        res.status(500).json({ error: "Error updating student" });
+    }
+};
+
+// מחיקת סטודנט
+exports.deleteStudent = async (req, res) => {
+    try {
+        const { St_code } = req.params;
+        const student = await Student.findByPk(St_code);
+        if (!student) return res.status(404).json({ error: "Student not found" });
+
+        await student.destroy();
+        res.json({ message: "Student deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: "Error deleting student" });
+    }
+};

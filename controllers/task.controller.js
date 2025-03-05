@@ -1,0 +1,87 @@
+const { Task, Worker } = require("../models");
+
+// שליפת כל המשימות עם פרטי העובד המשויך
+exports.getAllTasks = async (req, res) => {
+    try {
+        const tasks = await Task.findAll({
+            include: [
+                { model: Worker } // מחזיר את כל השדות של העובד
+            ]
+        });
+        res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching tasks" });
+    }
+};
+
+// שליפת משימה לפי קוד עם פרטי העובד המשויך
+exports.getTaskById = async (req, res) => {
+    try {
+        const { Ta_code } = req.params;
+        const task = await Task.findByPk(Ta_code, {
+            include: [
+                { model: Worker } // מחזיר את כל השדות של העובד
+            ]
+        });
+        if (!task) return res.status(404).json({ error: "Task not found" });
+
+        res.json(task);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching task" });
+    }
+};
+
+// הוספת משימה חדשה
+exports.addTask = async (req, res) => {
+    try {
+        const task = await Task.create(req.body);
+        res.status(201).json(task);
+    } catch (error) {
+        res.status(500).json({ error: "Error adding task" });
+    }
+};
+
+// עדכון משימה
+exports.updateTask = async (req, res) => {
+    try {
+        const { Ta_code } = req.params;
+        const { Ta_worker_code, Ta_description, Ta_date, Ta_time, Ta_done } = req.body;
+
+        const task = await Task.findByPk(Ta_code);
+        if (!task) return res.status(404).json({ error: "Task not found" });
+
+        // עדכון נתוני המשימה
+        task.Ta_worker_code = Ta_worker_code;
+        task.Ta_description = Ta_description;
+        task.Ta_date = Ta_date;
+        task.Ta_time = Ta_time;
+        task.Ta_done = Ta_done;
+
+        await task.save();
+
+        // שליפה מחדש כולל המידע על העובד
+        const updatedTask = await Task.findByPk(Ta_code, {
+            include: [
+                { model: Worker } // מחזיר את כל השדות של העובד
+            ]
+        });
+
+        res.json(updatedTask);
+    } catch (error) {
+        res.status(500).json({ error: "Error updating task" });
+    }
+};
+
+// מחיקת משימה
+exports.deleteTask = async (req, res) => {
+    try {
+        const { Ta_code } = req.params;
+        const task = await Task.findByPk(Ta_code);
+        if (!task) return res.status(404).json({ error: "Task not found" });
+
+        await task.destroy();
+        res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: "Error deleting task" });
+    }
+};
