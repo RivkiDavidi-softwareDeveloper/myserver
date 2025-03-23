@@ -3,12 +3,130 @@ const { Worker, TypeGender, TypeWorker, SystemLogin } = require("../models");
 // שליפת כל העובדים 
 exports.getAllWorkers = async (req, res) => {
     try {
-        const workers = await Worker.findAll();
-        res.json(workers);
+        const { genderO, genderF, typeWO, typeWF } = req.query;
+        genderOrder=Number(genderO);
+        genderFilter=Number(genderF);
+        typeWOrder=Number(typeWO);
+        typeWFilter=Number(typeWF);
+        console.log( genderOrder)
+        let listWorkers = await Worker.findAll();
+        console.log(listWorkers.length)
+
+        if (genderOrder === 1) {
+            if (typeWOrder === 1) {
+                if (genderFilter !== 0) {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    } else {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    }
+                } else {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    } else {
+                        listWorkers = listWorkers
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    }
+                }
+            } else {
+                if (genderFilter !== 0) {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
+                    } else {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
+                    }
+                } else {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
+                    } else {
+                        listWorkers = listWorkers
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
+                    }
+                }
+            }
+        } else {
+            if (typeWOrder === 1) {
+                if (genderFilter !== 0) {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    } else {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    }
+                } else {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    } else {
+                        listWorkers = listWorkers
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
+                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
+                    }
+                }
+            } else {
+                if (genderFilter !== 0) {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
+                    } else {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_gender === genderFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
+                    }
+                } else {
+                    if (typeWFilter !== 0) {
+                        listWorkers = listWorkers
+                            .filter(w => w.Wo_type_worker === typeWFilter)
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
+                    } else {
+                        listWorkers = listWorkers
+                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
+                    }
+                }
+            }
+        }
+        console.log(listWorkers.length)
+        res.json(listWorkers);
     } catch (error) {
         res.status(500).json({ error: "Error fetching workers" });
     }
-};
+}
 
 // שליפת עובד לפי קוד עם מידע על מגדר וסוג עובד
 exports.getWorkerById = async (req, res) => {
@@ -90,53 +208,54 @@ exports.getWorkerByNameAndPassword = async (req, res) => {
             where: {
                 [Op.and]: [{
                     [Op.or]: [
-                    Sequelize.where(
-                        Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')), 
-                        name // השוואת שם מלא
-                    ),
-                    Sequelize.where(
-                        Sequelize.fn('concat', Sequelize.col('Wo_name'), '  ', Sequelize.col('Wo_Fname')), 
-                        name // השוואת שם מלא
-                    ),
-                    Sequelize.where(
-                        Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname'), ' '), 
-                        name // השוואת שם מלא
-                    ),
-                    Sequelize.where(
-                        Sequelize.fn('concat', ' ', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')), 
-                        name // השוואת שם מלא
-                    ),
-                    Sequelize.where(
-                        Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')), 
-                        name // השוואת שם מלא
-                    )
-                ]}
+                        Sequelize.where(
+                            Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')),
+                            name // השוואת שם מלא
+                        ),
+                        Sequelize.where(
+                            Sequelize.fn('concat', Sequelize.col('Wo_name'), '  ', Sequelize.col('Wo_Fname')),
+                            name // השוואת שם מלא
+                        ),
+                        Sequelize.where(
+                            Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname'), ' '),
+                            name // השוואת שם מלא
+                        ),
+                        Sequelize.where(
+                            Sequelize.fn('concat', ' ', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')),
+                            name // השוואת שם מלא
+                        ),
+                        Sequelize.where(
+                            Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')),
+                            name // השוואת שם מלא
+                        )
+                    ]
+                }
                     ,
-                    { Wo_password: password } // השוואת סיסמא
+                { Wo_password: password } // השוואת סיסמא
                 ]
             }
         });
 
         // אם לא נמצא עובד, מחזירים הודעת שגיאה
-        if (worker) 
+        if (worker)
             res.json(worker);
-        else{
+        else {
             const systemLogin = await SystemLogin.findOne({
                 where: {
                     [Op.and]: [
-                        {SL_name:name},
-                        {SL_password: password } // השוואת סיסמא
+                        { SL_name: name },
+                        { SL_password: password } // השוואת סיסמא
                     ]
                 }
             });
-            if(systemLogin){
-                const worker2=new Worker();
-                worker2.Wo_name=systemLogin.SL_name;
-                worker2.Wo_password=systemLogin.SL_password;
-                worker2.Wo_ID="111111111";
+            if (systemLogin) {
+                const worker2 = new Worker();
+                worker2.Wo_name = systemLogin.SL_name;
+                worker2.Wo_password = systemLogin.SL_password;
+                worker2.Wo_ID = "111111111";
                 res.json(worker2);
             }
-            else{
+            else {
                 return res.status(404).json({ error: "Worker not found" });
             }
         }
