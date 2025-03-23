@@ -3,125 +3,53 @@ const { Worker, TypeGender, TypeWorker, SystemLogin } = require("../models");
 // שליפת כל העובדים 
 exports.getAllWorkers = async (req, res) => {
     try {
-        const { genderO, genderF, typeWO, typeWF } = req.query;
-        genderOrder=Number(genderO);
-        genderFilter=Number(genderF);
-        typeWOrder=Number(typeWO);
-        typeWFilter=Number(typeWF);
-        console.log( genderOrder)
-        let listWorkers = await Worker.findAll();
-        console.log(listWorkers.length)
+        const {value, genderO, genderF, typeWO, typeWF } = req.query;
 
-        if (genderOrder === 1) {
-            if (typeWOrder === 1) {
-                if (genderFilter !== 0) {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    } else {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    }
-                } else {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    } else {
-                        listWorkers = listWorkers
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender)
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    }
-                }
-            } else {
-                if (genderFilter !== 0) {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
-                    } else {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
-                    }
-                } else {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
-                    } else {
-                        listWorkers = listWorkers
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_gender - b.Wo_gender);
-                    }
-                }
-            }
-        } else {
-            if (typeWOrder === 1) {
-                if (genderFilter !== 0) {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    } else {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    }
-                } else {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    } else {
-                        listWorkers = listWorkers
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name))
-                            .sort((a, b) => a.Wo_type_worker - b.Wo_type_worker);
-                    }
-                }
-            } else {
-                if (genderFilter !== 0) {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
-                    } else {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_gender === genderFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
-                    }
-                } else {
-                    if (typeWFilter !== 0) {
-                        listWorkers = listWorkers
-                            .filter(w => w.Wo_type_worker === typeWFilter)
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
-                    } else {
-                        listWorkers = listWorkers
-                            .sort((a, b) => a.Wo_name.localeCompare(b.Wo_name));
-                    }
-                }
-            }
+        const genderOrder = Number(genderO);
+        const genderFilter = Number(genderF);
+        const typeWOrder = Number(typeWO);
+        const typeWFilter = Number(typeWF);
+
+        const searchValue = value ? value.toLowerCase() : null;
+
+        let listWorkers = await Worker.findAll();
+
+        // סינון לפי מגדר
+        if (genderFilter !== 0) {
+            listWorkers = listWorkers.filter(w => w.Wo_gender === genderFilter);
         }
-        console.log(listWorkers.length)
+
+        // סינון לפי סוג עובד
+        if (typeWFilter !== 0) {
+            listWorkers = listWorkers.filter(w => w.Wo_type_worker === typeWFilter);
+        }
+
+        // סינון לפי טקסט
+        if (searchValue) {
+            listWorkers = listWorkers.filter(w => 
+                w.Wo_name.toLowerCase().includes(searchValue) ||
+                w.Wo_Fname.toLowerCase().includes(searchValue) 
+            );
+        }
+
+        // סידור הרשימה
+        listWorkers.sort((a, b) => {
+            let result = 0;
+            if (genderOrder === 1) {
+                result = a.Wo_gender - b.Wo_gender;
+            }
+            if (result === 0 && typeWOrder === 1) {
+                result = a.Wo_type_worker - b.Wo_type_worker;
+            }
+            if (result === 0) {
+                result = a.Wo_name.localeCompare(b.Wo_name);
+            }
+            return result;
+        });
+
+        console.log("Total workers after filtering:", listWorkers.length);
+
+
         res.json(listWorkers);
     } catch (error) {
         res.status(500).json({ error: "Error fetching workers" });
