@@ -47,7 +47,7 @@ exports.getAllWorkers = async (req, res) => {
             return result;
         });
 
-        console.log("Total workers after filtering:", listWorkers.length);
+      //  console.log("Total workers after filtering:", listWorkers.length);
 
 
         res.json(listWorkers);

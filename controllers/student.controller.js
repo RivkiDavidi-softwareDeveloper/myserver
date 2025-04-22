@@ -2,28 +2,88 @@
 
 const { Student } = require("../models");
 
-// שליפת כל הסטודנטים
+/* // שליפת כל הסטודנטים
 exports.getAllStudents = async (req, res) => {
     try {
         const students = await Student.findAll({
             include: [
-                { model: TypeGender, as: "gender" },
                 { model: Parent, as: "father" },
                 { model: Parent, as: "mother" },
-                { model: City, as: "city" },
                 { model: Worker, as: "worker" },
-                { model: TypeActivityState, as: "activity_status" },
-                { model: TypeRisk, as: "risk" },
-                { model: Synagogue, as: "synagogue" },
-                { model: Frequency, as: "frequency" }
             ]
         });
         res.json(students);
     } catch (error) {
         res.status(500).json({ error: "Error fetching students" });
     }
-};
+}; */
+// שליפת כל החניכים 
+exports.getAllStudents = async (req, res) => {
+    try {
+  
+        const {value, order, genderF, statusF, workerF } = req.query;
 
+        const genderOrder = Number(order);
+        const genderFilter = Number(genderF);
+        const statusFilter = Number(statusF);
+        const workerFilter = Number(workerF);
+
+        const searchValue = value ? value.toLowerCase() : null;
+
+        let listStudents = await Student.findAll({
+            include: [
+                { model: Parent, as: "father" },
+                { model: Parent, as: "mother" },
+                { model: Worker, as: "worker" },
+            ]
+        });
+
+        // סינון לפי מגדר
+        if (genderFilter !== 0) {
+            listStudents = listStudents.filter(s => s.St_gender === genderFilter);
+        }
+
+        // סינון לפי סוג סטטוס
+        if (statusFilter !== 0) {
+            listStudents = listStudents.filter(s=>s.St_activity_status === statusFilter);
+        }
+
+        // סינון לפי קוד עובד
+        if (workerFilter !== -1) {
+            listStudents = listStudents.filter(s=>s.St_worker_code === workerFilter);
+        }
+
+        // סינון לפי טקסט
+        if (searchValue) {
+            listStudents = listStudents.filter(s => 
+                s.St_name.toLowerCase().includes(searchValue) ||
+                s.St_Fname.toLowerCase().includes(searchValue) 
+            );
+        }
+
+        // סידור הרשימה
+        listStudents.sort((a, b) => {
+            let result = 0;
+            if (genderOrder === 1) {
+                result = a.St_gender - b.St_gender;
+            }
+          /*   if (result === 0 && genderOrder === 1) {
+                result = a.Wo_type_worker - b.Wo_type_worker;
+            }
+            if (result === 0) {
+                result = a.Wo_name.localeCompare(b.Wo_name);
+            } */
+            return result;
+        });
+
+        console.log("Total students after filtering:", listStudents.length);
+
+
+        res.json(listStudents);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching workers" });
+    }
+}
 // הוספת סטודנט חדש
 exports.addStudent = async (req, res) => {
     try {
