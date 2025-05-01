@@ -5,6 +5,9 @@ exports.getAllCities = async (req, res) => {
 
     try {
         const cities = await City.findAll();
+        cities.sort((a, b) => {
+            return a.Ci_name.localeCompare(b.Ci_name);
+        });
         res.json(cities);
     } catch (error) {
         res.status(500).json({ error: "Error fetching cities"});

@@ -6,6 +6,7 @@ const synagogueController = require("../controllers/synagogue.controller");
 
 // הגדרת הנתיבים עבור Synagogue
 router.get("/", synagogueController.getAllSynagogues);
+router.get("/ofCommunity", synagogueController.getSynagoguesOfCommunity);
 router.post("/", synagogueController.addSynagogue);
 router.put("/:Sy_code", synagogueController.updateSynagogue);
 router.delete("/:Sy_code", synagogueController.deleteSynagogue);

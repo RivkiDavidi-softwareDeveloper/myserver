@@ -6,6 +6,27 @@ const { Synagogue } = require("../models");
 exports.getAllSynagogues = async (req, res) => {
     try {
         const synagogues = await Synagogue.findAll();
+        synagogues.sort((a, b) => {
+            return a.Sy_name.localeCompare(b.Sy_name);
+        });
+        res.json(synagogues);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching synagogues" });
+    }
+};
+// שליפת בתי הכנסת לפי קוד קהילה
+exports.getSynagoguesOfCommunity = async (req, res) => {
+    try {
+        const { codeCommunity } = req.query;
+        const code = Number(codeCommunity);
+        const synagogues = await Synagogue.findAll();
+        // סינון לפי קוד קהילה
+        if (code !== -1) {
+            synagogues = synagogues.filter(s=>s.Sy_code_Community === code);
+        }
+        synagogues.sort((a, b) => {
+            return a.Sy_name.localeCompare(b.Sy_name);
+        });
         res.json(synagogues);
     } catch (error) {
         res.status(500).json({ error: "Error fetching synagogues" });

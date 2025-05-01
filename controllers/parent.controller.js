@@ -12,6 +12,23 @@ exports.getAllParents = async (req, res) => {
     }
 };
 
+// שליפת הורה לפי קוד הורה
+exports.getParentOfCode = async (req, res) => {
+    try {
+        const { codeParent } = req.query;
+        const code = Number(codeParent);
+        if (isNaN(code)) {
+            return res.status(400).json({ error: "Invalid code" });
+        }
+        const parent = await Parent.findOne({ where: { Pa_code: code } });
+        if (!parent) {
+            return res.status(404).json({ error: "Parent not found" });
+        }
+        res.json(parent);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching parent" });
+    }
+};
 // הוספת הורה חדש
 exports.addParent = async (req, res) => {
     try {

@@ -29,39 +29,22 @@ exports.getAllStudents = async (req, res) => {
         const workerFilter = Number(workerF);
 
         const searchValue = value ? value.toLowerCase() : null;
-
-        console.log('genderOrder:', genderOrder);
-        console.log('genderFilter:', genderFilter);
-        console.log('statusFilter:', statusFilter);
-        console.log('workerFilter:', workerFilter);
-        console.log('searchValue:', searchValue);
         let listStudents = await Student.findAll({
         });
-/*         let listStudents = await Student.findAll({
-            include: [
-                { model: Parent, as: "father" },
-                { model: Parent, as: "mother" },
-                { model: Worker, as: "worker" },
-            ]
-        }); */
-        console.log('111111:');
+
         // סינון לפי מגדר
         if (genderFilter !== 0) {
             listStudents = listStudents.filter(s => s.St_gender === genderFilter);
         }
-        console.log('22222');
         // סינון לפי סוג סטטוס
         if (statusFilter !== 0) {
             listStudents = listStudents.filter(s=>s.St_activity_status === statusFilter);
         }
-        console.log('3333333');
 
         // סינון לפי קוד עובד
         if (workerFilter !== -1) {
             listStudents = listStudents.filter(s=>s.St_worker_code === workerFilter);
         }
-        console.log('4444444');
-
         // סינון לפי טקסט
         if (searchValue) {
             listStudents = listStudents.filter(s => 

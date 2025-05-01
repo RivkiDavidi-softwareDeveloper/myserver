@@ -6,11 +6,15 @@ const { Community } = require("../models");
 exports.getAllCommunities = async (req, res) => {
     try {
         const communities = await Community.findAll();
+        communities.sort((a, b) => {
+            return a.Com_name.localeCompare(b.Com_name);
+        });
         res.json(communities);
     } catch (error) {
         res.status(500).json({ error: "Error fetching communities" });
     }
 };
+
 
 // הוספת קהילה חדשה
 exports.addCommunity = async (req, res) => {
