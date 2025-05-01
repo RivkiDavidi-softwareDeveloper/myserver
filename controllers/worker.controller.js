@@ -56,19 +56,23 @@ exports.getAllWorkers = async (req, res) => {
     }
 }
 
-// שליפת עובד לפי קוד עם מידע על מגדר וסוג עובד
-exports.getWorkerById = async (req, res) => {
+// שליפת עובד לפי קוד 
+exports.getWorkerOfCode = async (req, res) => {
     try {
-        const { Wo_code } = req.params;
-        const worker = await Worker.findByPk(Wo_code);
-        if (!worker) return res.status(404).json({ error: "Worker not found" });
-
+        const {codeWoreker } = req.query;
+        const code = Number(codeWoreker);
+        if (isNaN(code)) {
+            return res.status(400).json({ error: "Invalid code" });
+        }
+        const worker = await Worker.findOne({ where: { Wo_code: code } });
+        if (!worker) {
+            return res.status(404).json({ error: "worker not found" });
+        }
         res.json(worker);
     } catch (error) {
-        res.status(500).json({ error: "Error fetching worker" });
+        res.status(500).json({ error: "Error fetching parent" });
     }
 };
-
 // הוספת עובד חדש
 exports.addWorker = async (req, res) => {
     try {

@@ -21,7 +21,9 @@ const fileForWorkerRoutes = require("./routes/fileForWorker.routes");
 const communityRoutes = require("./routes/community.routes");
 const synagogueRoutes = require("./routes/synagogue.routes");
 const frequencyRoutes = require("./routes/frequency.routes");
-
+const studiesForSharerRoutes = require("./routes/studiesForSharer.routes");
+const studiesForStudentRoutes = require("./routes/studiesForStudent.routes.");
+const difficultyStudentRoutes= require("./routes/difficultyStudent.routes")
 
 
 require("dotenv").config();
@@ -39,6 +41,8 @@ app.use("/api/typeGenders", typeGenderRoutes);
 app.use("/api/typeTasks", typeTaskRoutes);
 app.use("/api/typeOfActivities", typeOfActivityRoutes);
 app.use("/api/systemLogins", systemLoginRoutes);
+app.use("/api/studiesForStudents", studiesForStudentRoutes );
+app.use("/api/studiesForShareres", studiesForSharerRoutes);
 app.use("/api/parents", parentRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/tasks", taskRoutes);
@@ -50,6 +54,7 @@ app.use("/api/filesForWorker", fileForWorkerRoutes);
 app.use("/api/communities", communityRoutes);
 app.use("/api/synagogues", synagogueRoutes);
 app.use("/api/frequencies", frequencyRoutes);
+app.use("/api/difficultyStudents", difficultyStudentRoutes);
 
 
 const PORT = process.env.PORT || 3000;
