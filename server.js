@@ -22,7 +22,7 @@ const communityRoutes = require("./routes/community.routes");
 const synagogueRoutes = require("./routes/synagogue.routes");
 const frequencyRoutes = require("./routes/frequency.routes");
 const studiesForSharerRoutes = require("./routes/studiesForSharer.routes");
-const studiesForStudentRoutes = require("./routes/studiesForStudent.routes.");
+const studiesForStudentRoutes = require("./routes/studiesForStudent.routes");
 const difficultyStudentRoutes= require("./routes/difficultyStudent.routes")
 
 

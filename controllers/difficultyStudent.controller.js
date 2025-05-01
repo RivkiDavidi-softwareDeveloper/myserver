@@ -17,16 +17,18 @@ exports.getAllDifficultiesOfStudent = async (req, res) => {
         if (isNaN(code)) {
             return res.status(400).json({ error: "Invalid code" });
         }
-        const difficulties = await DifficultyStudent.findAll();
 
-        if (code !== 0) {
-            difficulties = difficulties.filter(d => d.DS_student_code === code);
-        }
+        const difficulties = await DifficultyStudent.findAll({
+            where: { DS_student_code: code }
+        });
+
         res.json(difficulties);
     } catch (error) {
         res.status(500).json({ error: "Error fetching difficulties for students" });
     }
 };
+
+
 // הוספת קושי לתלמיד
 exports.addDifficulty = async (req, res) => {
     try {

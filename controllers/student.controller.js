@@ -64,10 +64,6 @@ exports.getAllStudents = async (req, res) => {
             }
             return result;
         });
-
-        console.log("Total students after filtering:", listStudents.length);
-
-
         res.json(listStudents);
     } catch (error) {
         res.status(500).json({ error: "Error fetching workers" });
