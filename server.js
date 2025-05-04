@@ -24,6 +24,7 @@ const frequencyRoutes = require("./routes/frequency.routes");
 const studiesForSharerRoutes = require("./routes/studiesForSharer.routes");
 const studiesForStudentRoutes = require("./routes/studiesForStudent.routes");
 const difficultyStudentRoutes= require("./routes/difficultyStudent.routes")
+const activityRoutes= require("./routes/activity.routes")
 
 
 require("dotenv").config();
@@ -32,8 +33,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use("/api/activities", activityRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/cities", cityRoutes);
+app.use("/api/categoriesForActivities", cityRoutes);
+
 app.use("/api/typeActivityStates", typeActivityStateRoutes);
 app.use("/api/typeRisks", typeRiskRoutes);
 app.use("/api/typeWorkers", typeWorkerRoutes);

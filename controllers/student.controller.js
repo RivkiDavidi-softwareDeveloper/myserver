@@ -2,21 +2,7 @@
 
 const { Student } = require("../models");
 
-/* // שליפת כל הסטודנטים
-exports.getAllStudents = async (req, res) => {
-    try {
-        const students = await Student.findAll({
-            include: [
-                { model: Parent, as: "father" },
-                { model: Parent, as: "mother" },
-                { model: Worker, as: "worker" },
-            ]
-        });
-        res.json(students);
-    } catch (error) {
-        res.status(500).json({ error: "Error fetching students" });
-    }
-}; */
+
 // שליפת כל החניכים 
 exports.getAllStudents = async (req, res) => {
     try {

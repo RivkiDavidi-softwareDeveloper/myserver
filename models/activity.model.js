@@ -64,6 +64,8 @@ const Activity = sequelize.define("Activity", {
 // הגדרת מפתחות זרים באמצעות associations
 Activity.associate = function (models) {
     Activity.belongsTo(models.Worker, { foreignKey: "AFS_worker_code" });
+    Activity.hasMany(models.StudentForActivity, { foreignKey: 'SFA_code_activity' });
+    Activity.hasMany(models.CategoriesForActivity, { foreignKey: 'CFA_code_activity'   });
 };
 
 module.exports = Activity;

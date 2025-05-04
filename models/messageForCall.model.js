@@ -43,8 +43,10 @@ const MessageForCall = sequelize.define("MessageForCall", {
 
 // הגדרת מפתחות זרים באמצעות associations
 MessageForCall.associate = function (models) {
-    MessageForCall.belongsTo(models.Calll, { foreignKey: "MFC_call_code" });
+    MessageForCall.belongsTo(models.Call, { foreignKey: "MFC_call_code" });
     MessageForCall.belongsTo(models.Worker, { foreignKey: "MFC_sender_worker_code" });
 };
 
+
+  
 module.exports = MessageForCall;
