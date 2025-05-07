@@ -39,5 +39,7 @@ const Task = sequelize.define("Task", {
     tableName: "task", // שם הטבלה במסד הנתונים
     timestamps: false // לא נרצה להשתמש בזמן יצירה/עדכון אוטומטי
 });
-
+Task.associate = function(models) {
+    Task.belongsTo(models.Worker, {foreignKey: "Ta_worker_code"});
+};
 module.exports = Task;

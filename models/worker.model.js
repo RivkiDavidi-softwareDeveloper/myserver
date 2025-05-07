@@ -60,6 +60,7 @@ Worker.associate = function (models) {
     Worker.belongsTo(models.TypeGender, { foreignKey: "Wo_gender" });
     Worker.belongsTo(models.TypeWorker, { foreignKey: "Wo_type_worker" });
     Worker.hasMany(models.Activity, { foreignKey: "AFS_worker_code" });
+    Worker.hasMany(models.Task, { foreignKey: "Ta_worker_code"});
 };
 
 module.exports = Worker;

@@ -78,12 +78,15 @@ exports.getWorkerOfCode = async (req, res) => {
 // הוספת עובד חדש
 exports.addWorker = async (req, res) => {
     try {
-        const worker = await Worker.create(req.body);
+        const { Wo_code, ...data } = req.body; // מסיר את Wo_code כדי שה־AUTO_INCREMENT יפעל
+        const worker = await Worker.create(data);
         res.status(201).json(worker);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: "Error adding worker" });
     }
 };
+
 
 // עדכון פרטי עובד
 exports.updateWorker = async (req, res) => {
@@ -111,6 +114,7 @@ exports.updateWorker = async (req, res) => {
 
         res.json(updatedWorker);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: "Error updating worker" });
     }
 };
@@ -125,6 +129,8 @@ exports.deleteWorker = async (req, res) => {
         await worker.destroy();
         res.json({ message: "Worker deleted successfully" });
     } catch (error) {
+        console.log(error)
+
         res.status(500).json({ error: "Error deleting worker" });
     }
 };

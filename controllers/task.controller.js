@@ -56,9 +56,11 @@ exports.getTaskById = async (req, res) => {
 // הוספת משימה חדשה
 exports.addTask = async (req, res) => {
     try {
-        const task = await Task.create(req.body);
+        const { Ta_code, ...data } = req.body;
+        const task = await Task.create(data);
         res.status(201).json(task);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: "Error adding task" });
     }
 };
@@ -90,6 +92,8 @@ exports.updateTask = async (req, res) => {
 
         res.json(updatedTask);
     } catch (error) {
+        console.log(error);
+
         res.status(500).json({ error: "Error updating task" });
     }
 };
