@@ -3,12 +3,34 @@ const { Task, Worker } = require("../models");
 // שליפת כל המשימות עם פרטי העובד המשויך
 exports.getAllTasks = async (req, res) => {
     try {
-        const tasks = await Task.findAll({
-            include: [
-                { model: Worker } // מחזיר את כל השדות של העובד
-            ]
-        });
+
+        const { workerCode} = req.query;
+        const code = Number(workerCode);
+        let tasks = await Task.findAll();
+        // סינון לפי עובד
+        if (code !== -1) {
+            tasks = tasks.filter(t =>
+                t.Ta_worker_code === code
+            );
+        } 
         res.json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: "Error fetching tasks" });
+    }
+};
+// שליפת כמות המשימות שלא התבצעו עבור קוד עובד
+exports.getAmoumtTasksNotDoneForWorker = async (req, res) => {
+    try {
+        const { workerCode} = req.query;
+        const code = Number(workerCode);
+        let tasks = await Task.findAll();
+        // סינון לפי עובד
+        if (code !== -1) {
+            tasks = tasks.filter(t =>
+                t.Ta_worker_code === code && t.Ta_done===0
+            );
+        } 
+        res.json(tasks.length);
     } catch (error) {
         res.status(500).json({ error: "Error fetching tasks" });
     }

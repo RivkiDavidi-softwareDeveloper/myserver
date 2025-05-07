@@ -28,7 +28,9 @@ exports.getAllWorkers = async (req, res) => {
         if (searchValue) {
             listWorkers = listWorkers.filter(w => 
                 w.Wo_name.toLowerCase().includes(searchValue) ||
-                w.Wo_Fname.toLowerCase().includes(searchValue) 
+                w.Wo_Fname.toLowerCase().includes(searchValue) ||
+                (w.Wo_name+" "+w.Wo_Fname).toLowerCase().includes(searchValue) 
+
             );
         }
 

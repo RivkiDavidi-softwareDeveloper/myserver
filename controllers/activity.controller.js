@@ -56,7 +56,7 @@ exports.getAllActivities = async (req, res) => {
         // סינון לפי עובד
         if (workerFilter !== -1) {
             activities = activities.filter(activity =>
-                activity.Worker && activity.Worker.Wo_code === workerFilter
+                 activity.AFS_worker_code === workerFilter
             );
         }
         // סינון לפי חניך
@@ -127,29 +127,45 @@ exports.getAllActivities = async (req, res) => {
             });
         }
         //מיון
-        // נניח ש activities הוא מערך של פעילויות, ובסיס הנתונים כבר מחובר דרך Sequelize
-        if (genderOrder === 0) {
-            // מיון לפי שם העובד (Wo_name ו-Wo_Fname)
-            activities = activities.sort((a, b) => {
-                const workerA = `${a.Worker.Wo_Fname} ${a.Worker.Wo_name}`.toLowerCase();  // שם העובד (שם פרטי + שם משפחה)
-                const workerB = `${b.Worker.Wo_Fname} ${b.Worker.Wo_name}`.toLowerCase();  // שם העובד (שם פרטי + שם משפחה)
-                return workerA.localeCompare(workerB);
-            });
-        } else if (genderOrder === 1) {
-            // מיון לפי תאריך הפעילות (AFS_date)
-            activities = activities.sort((a, b) => {
-                const dateA = new Date(a.AFS_date);  // תאריך הפעילות מתוך השדה AFS_date
-                const dateB = new Date(b.AFS_date);  // תאריך הפעילות מתוך השדה AFS_date
-                return dateA - dateB;
-            });
-        } else if (genderOrder === 2) {
-            // מיון לפי שם החניך (St_name ו-St_Fname)
-            activities = activities.sort((a, b) => {
-                const studentA = `${a.StudentForActivity.Student.St_Fname} ${a.StudentForActivity.Student.St_name}`.toLowerCase(); // שם החניך (שם פרטי + שם משפחה)
-                const studentB = `${b.StudentForActivity.Student.St_Fname} ${b.StudentForActivity.Student.St_name}`.toLowerCase(); // שם החניך (שם פרטי + שם משפחה)
-                return studentA.localeCompare(studentB);
-            });
-        }
+        activities = activities.sort((a, b) => {
+            const workerA = `${a.Worker?.Wo_Fname || ''} ${a.Worker?.Wo_name || ''}`.toLowerCase();
+            const workerB = `${b.Worker?.Wo_Fname || ''} ${b.Worker?.Wo_name || ''}`.toLowerCase();
+        
+            const dateA = new Date(a.AFS_date);
+            const dateB = new Date(b.AFS_date);
+        
+            const studentA = `${a.StudentForActivity?.Student?.St_Fname || ''} ${a.StudentForActivity?.Student?.St_name || ''}`.toLowerCase();
+            const studentB = `${b.StudentForActivity?.Student?.St_Fname || ''} ${b.StudentForActivity?.Student?.St_name || ''}`.toLowerCase();
+        
+            let compareOrder;
+            if (genderOrder === 0) {
+                compareOrder = [
+                    () => workerA.localeCompare(workerB),
+                    () => dateA.getTime() - dateB.getTime(),
+                    () => studentA.localeCompare(studentB)
+                ];
+            } else if (genderOrder === 1) {
+                compareOrder = [
+                    () => dateA.getTime() - dateB.getTime(),
+                    () => workerA.localeCompare(workerB),
+                    () => studentA.localeCompare(studentB)
+                ];
+            } else {
+                compareOrder = [
+                    () => studentA.localeCompare(studentB),
+                    () => dateA.getTime() - dateB.getTime(),
+                    () => workerA.localeCompare(workerB)
+                ];
+            }
+        
+            for (const compare of compareOrder) {
+                const result = compare();
+                if (result !== 0) return result;
+            }
+            return 0;
+        });
+        
+        
 
 
 

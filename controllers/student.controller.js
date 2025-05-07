@@ -35,7 +35,9 @@ exports.getAllStudents = async (req, res) => {
         if (searchValue) {
             listStudents = listStudents.filter(s => 
                 s.St_name.toLowerCase().includes(searchValue) ||
-                s.St_Fname.toLowerCase().includes(searchValue) 
+                s.St_Fname.toLowerCase().includes(searchValue) ||
+                (s.St_name+" "+s.St_Fname).toLowerCase().includes(searchValue) 
+
             );
         }
 

@@ -23,8 +23,13 @@ const synagogueRoutes = require("./routes/synagogue.routes");
 const frequencyRoutes = require("./routes/frequency.routes");
 const studiesForSharerRoutes = require("./routes/studiesForSharer.routes");
 const studiesForStudentRoutes = require("./routes/studiesForStudent.routes");
+const studentForProjectRoutes = require("./routes/studentForProject.routes");
+
 const difficultyStudentRoutes= require("./routes/difficultyStudent.routes")
 const activityRoutes= require("./routes/activity.routes")
+const categoriesForActivityRoutes= require("./routes/categoriesForActivity.routes")
+
+const projectRoutes= require("./routes/project.routes")
 
 
 require("dotenv").config();
@@ -36,8 +41,7 @@ app.use(express.json());
 app.use("/api/activities", activityRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/cities", cityRoutes);
-app.use("/api/categoriesForActivities", cityRoutes);
-
+app.use("/api/categoriesForActivities", categoriesForActivityRoutes);
 app.use("/api/typeActivityStates", typeActivityStateRoutes);
 app.use("/api/typeRisks", typeRiskRoutes);
 app.use("/api/typeWorkers", typeWorkerRoutes);
@@ -45,9 +49,13 @@ app.use("/api/typeGenders", typeGenderRoutes);
 app.use("/api/typeTasks", typeTaskRoutes);
 app.use("/api/typeOfActivities", typeOfActivityRoutes);
 app.use("/api/systemLogins", systemLoginRoutes);
+app.use("/api/studentForProjects", studentForProjectRoutes);
+
 app.use("/api/studiesForStudents", studiesForStudentRoutes );
 app.use("/api/studiesForShareres", studiesForSharerRoutes);
 app.use("/api/parents", parentRoutes);
+app.use("/api/projects", projectRoutes);
+
 app.use("/api/workers", workerRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/calls", callRoutes);
