@@ -1,6 +1,7 @@
 // controllers/student.controller.js
 
 const { Student } = require("../models");
+const { clean } = require('../utils/cleaner');
 
 
 // שליפת כל החניכים 
@@ -59,13 +60,58 @@ exports.getAllStudents = async (req, res) => {
 }
 // הוספת סטודנט חדש
 exports.addStudent = async (req, res) => {
+    const [studentDataRaw, parentFDataRaw, parentMDataRaw, difficultiesDataRaw, studiesDataRaw] = req.body.data;
+
+    const t = await Student.sequelize.transaction();
+
     try {
-        const student = await Student.create(req.body);
-        res.status(201).json(student);
+        const parentFData = clean(parentFDataRaw, ['Pa_code']);
+        const parentMData = clean(parentMDataRaw, ['Pa_code']);
+        const studentData = clean(studentDataRaw, ['St_code']);
+        const studiesData = clean(studiesDataRaw, ['SFS_code']);
+
+        const cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
+
+        // יצירת הורה אב
+        const father = await Parent.create(parentFData, { transaction: t });
+
+        // יצירת הורה אם
+        const mother = await Parent.create(parentMData, { transaction: t });
+
+        // יצירת תלמיד עם קודי ההורים
+        const student = await Student.create({
+            ...studentData,
+            St_father_code: father.Pa_code,
+            St_mother_code: mother.Pa_code
+        }, { transaction: t });
+
+        const studentCode = student.St_code;
+
+        // יצירת קשיים
+        if (cleanedDifficulties.length > 0) {
+            const difficultiesWithFK = cleanedDifficulties.map(d => ({
+                ...d,
+                DS_student_code: studentCode
+            }));
+            await DifficultyStudent.bulkCreate(difficultiesWithFK, { transaction: t });
+        }
+
+        // יצירת פרטי לימודים
+        await StudiesForStudent.create({
+            ...studiesData,
+            SFS_student_code: studentCode
+        }, { transaction: t });
+
+        await t.commit();
+        res.status(201).json({ studentCode });
+
     } catch (error) {
-        res.status(500).json({ error: "Error adding student" });
+        await t.rollback();
+        console.error(error);
+        res.status(500).json({ error: "שגיאה בהוספת תלמיד" });
     }
 };
+
 
 // עדכון פרטי סטודנט
 exports.updateStudent = async (req, res) => {
