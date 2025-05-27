@@ -10,16 +10,19 @@ exports.getAllCities = async (req, res) => {
         });
         res.json(cities);
     } catch (error) {
-        res.status(500).json({ error: "Error fetching cities"});
+        res.status(500).json({ error: "Error fetching cities" });
     }
 };
 
 // הוספת עיר חדשה
 exports.addCity = async (req, res) => {
     try {
-        const city = await City.create(req.body);
+        const { Ci_code, ...data } = req.body; 
+        const city = await City.create(data);
         res.status(201).json(city);
     } catch (error) {
+        console.log(error);
+
         res.status(500).json({ error: "Error adding city" });
     }
 };

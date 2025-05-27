@@ -1,6 +1,6 @@
 // controllers/student.controller.js
+const { Parent, Student, DifficultyStudent, StudiesForStudent } = require('../models');
 
-const { Student } = require("../models");
 const { clean } = require('../utils/cleaner');
 
 
@@ -61,9 +61,7 @@ exports.getAllStudents = async (req, res) => {
 // הוספת סטודנט חדש
 exports.addStudent = async (req, res) => {
     const [studentDataRaw, parentFDataRaw, parentMDataRaw, difficultiesDataRaw, studiesDataRaw] = req.body.data;
-
     const t = await Student.sequelize.transaction();
-
     try {
         const parentFData = clean(parentFDataRaw, ['Pa_code']);
         const parentMData = clean(parentMDataRaw, ['Pa_code']);

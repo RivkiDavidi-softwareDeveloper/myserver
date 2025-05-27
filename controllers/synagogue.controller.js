@@ -19,16 +19,18 @@ exports.getSynagoguesOfCommunity = async (req, res) => {
     try {
         const { codeCommunity } = req.query;
         const code = Number(codeCommunity);
-        const synagogues = await Synagogue.findAll();
+        let synagogues = await Synagogue.findAll();
         // סינון לפי קוד קהילה
         if (code !== -1) {
-            synagogues = synagogues.filter(s=>s.Sy_code_Community === code);
+            synagogues = synagogues.filter(s => s.Sy_code_Community === code);
         }
         synagogues.sort((a, b) => {
             return a.Sy_name.localeCompare(b.Sy_name);
         });
         res.json(synagogues);
     } catch (error) {
+        console.error(error);
+
         res.status(500).json({ error: "Error fetching synagogues" });
     }
 };
@@ -36,7 +38,8 @@ exports.getSynagoguesOfCommunity = async (req, res) => {
 // הוספת בית כנסת חדש
 exports.addSynagogue = async (req, res) => {
     try {
-        const synagogue = await Synagogue.create(req.body);
+        const { Sy_code, ...data } = req.body;
+        const synagogue = await Synagogue.create(data);
         res.status(201).json(synagogue);
     } catch (error) {
         res.status(500).json({ error: "Error adding synagogue" });

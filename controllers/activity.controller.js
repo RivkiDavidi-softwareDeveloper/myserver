@@ -5,7 +5,7 @@ const { Student } = require("../models");
 const { CategoriesForActivity } = require("../models");
 
 
-
+//שליפת כל הפעילויות לפי סינונים
 exports.getAllActivities = async (req, res) => {
     try {
 
@@ -177,18 +177,6 @@ exports.getAllActivities = async (req, res) => {
     }
 };
 
-exports.getActivityById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const activity = await Activity.findByPk(id);
-        if (!activity) {
-            return res.status(404).json({ error: "Activity not found" });
-        }
-        res.json(activity);
-    } catch (error) {
-        res.status(500).json({ error: "Error fetching activity" });
-    }
-};
 
 exports.createActivity = async (req, res) => {
     try {

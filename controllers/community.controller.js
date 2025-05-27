@@ -19,7 +19,8 @@ exports.getAllCommunities = async (req, res) => {
 // הוספת קהילה חדשה
 exports.addCommunity = async (req, res) => {
     try {
-        const community = await Community.create(req.body);
+         const { Com_code, ...data } = req.body; 
+        const community = await Community.create(data);
         res.status(201).json(community);
     } catch (error) {
         res.status(500).json({ error: "Error adding community" });
