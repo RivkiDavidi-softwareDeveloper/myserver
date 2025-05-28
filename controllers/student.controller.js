@@ -247,7 +247,6 @@ exports.getStudentImage = async (req, res) => {
         const { imageName } = req.params;
 
         const imagePath = path.join(__dirname, '../images/studentsImages', `${imageName}.jpg`);
-        console.log(imagePath);
         if (!fs.existsSync(imagePath)) {
 
             return res.status(404).json({ error: 'התמונה לא נמצאה' });

@@ -30,7 +30,7 @@ const activityRoutes= require("./routes/activity.routes")
 const categoriesForActivityRoutes= require("./routes/categoriesForActivity.routes")
 
 const projectRoutes= require("./routes/project.routes")
-
+const subcategoryForTypeActivityRoutes= require("./routes/subcategoryForTypeActivity.routes")
 
 require("dotenv").config();
 
@@ -67,6 +67,7 @@ app.use("/api/communities", communityRoutes);
 app.use("/api/synagogues", synagogueRoutes);
 app.use("/api/frequencies", frequencyRoutes);
 app.use("/api/difficultyStudents", difficultyStudentRoutes);
+app.use("/api/subcategoryForTypeActivities", subcategoryForTypeActivityRoutes);
 
 
 const PORT = process.env.PORT || 3000;
