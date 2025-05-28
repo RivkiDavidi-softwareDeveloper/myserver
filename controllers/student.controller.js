@@ -1,15 +1,14 @@
 // controllers/student.controller.js
-const { Parent, Student, DifficultyStudent, StudiesForStudent } = require('../models');
+const { Parent, Student, DifficultyStudent, StudiesForStudent,StudentForProject,FileForStudent,StudentForActivity } = require('../models');
 
 const { clean } = require('../utils/cleaner');
-
-
+const fs = require('fs');
+const path = require('path');
 // שליפת כל החניכים 
 exports.getAllStudents = async (req, res) => {
     try {
-  
-        const {value, order, genderF, statusF, workerF } = req.query;
-;
+
+        const { value, order, genderF, statusF, workerF } = req.query;
         const genderOrder = Number(order);
         const genderFilter = Number(genderF);
         const statusFilter = Number(statusF);
@@ -25,19 +24,19 @@ exports.getAllStudents = async (req, res) => {
         }
         // סינון לפי סוג סטטוס
         if (statusFilter !== 0) {
-            listStudents = listStudents.filter(s=>s.St_activity_status === statusFilter);
+            listStudents = listStudents.filter(s => s.St_activity_status === statusFilter);
         }
 
         // סינון לפי קוד עובד
         if (workerFilter !== -1) {
-            listStudents = listStudents.filter(s=>s.St_worker_code === workerFilter);
+            listStudents = listStudents.filter(s => s.St_worker_code === workerFilter);
         }
         // סינון לפי טקסט
         if (searchValue) {
-            listStudents = listStudents.filter(s => 
+            listStudents = listStudents.filter(s =>
                 s.St_name.toLowerCase().includes(searchValue) ||
                 s.St_Fname.toLowerCase().includes(searchValue) ||
-                (s.St_name+" "+s.St_Fname).toLowerCase().includes(searchValue) 
+                (s.St_name + " " + s.St_Fname).toLowerCase().includes(searchValue)
 
             );
         }
@@ -101,7 +100,7 @@ exports.addStudent = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
-        res.status(201).json({ studentCode });
+        res.status(201).json(student);
 
     } catch (error) {
         await t.rollback();
@@ -109,85 +108,156 @@ exports.addStudent = async (req, res) => {
         res.status(500).json({ error: "שגיאה בהוספת תלמיד" });
     }
 };
-
-
 // עדכון פרטי סטודנט
 exports.updateStudent = async (req, res) => {
+    const [studentDataRaw, parentFDataRaw, parentMDataRaw, difficultiesDataRaw, studiesDataRaw] = req.body.data;
+    const t = await Student.sequelize.transaction();
     try {
-        const { St_code } = req.params;
-        const {
-            St_ID,
-            St_gender,
-            St_name,
-            St_Fname,
-            St_image,
-            St_birthday,
-            St_father_code,
-            St_mother_code,
-            St_city_code,
-            St_address,
-            St_cell_phone,
-            St_phone,
-            St_email,
-            St_worker_code,
-            St_activity_status,
-            St_risk_code,
-            St_description_reception_status,
-            St_contact,
-            St_contact_phone,
-            St_requester,
-            St_socioeconomic_status,
-            St_code_synagogue,
-            St_code_frequency,
-            St_amount_frequency
-        } = req.body;
+        const parentFData = clean(parentFDataRaw, ['Pa_code']);
+        const parentMData = clean(parentMDataRaw, ['Pa_code']);
+        const studentData = clean(studentDataRaw, ['St_code']);
+        const studiesData = clean(studiesDataRaw, ['SFS_code']);
+        const cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
 
-        const student = await Student.findByPk(St_code);
-        if (!student) return res.status(404).json({ error: "Student not found" });
+        const studentCode = studentDataRaw.St_code;
 
-        // עדכון השדות של הסטודנט
-        student.St_ID = St_ID;
-        student.St_gender = St_gender;
-        student.St_name = St_name;
-        student.St_Fname = St_Fname;
-        student.St_image = St_image;
-        student.St_birthday = St_birthday;
-        student.St_father_code = St_father_code;
-        student.St_mother_code = St_mother_code;
-        student.St_city_code = St_city_code;
-        student.St_address = St_address;
-        student.St_cell_phone = St_cell_phone;
-        student.St_phone = St_phone;
-        student.St_email = St_email;
-        student.St_worker_code = St_worker_code;
-        student.St_activity_status = St_activity_status;
-        student.St_risk_code = St_risk_code;
-        student.St_description_reception_status = St_description_reception_status;
-        student.St_contact = St_contact;
-        student.St_contact_phone = St_contact_phone;
-        student.St_requester = St_requester;
-        student.St_socioeconomic_status = St_socioeconomic_status;
-        student.St_code_synagogue = St_code_synagogue;
-        student.St_code_frequency = St_code_frequency;
-        student.St_amount_frequency = St_amount_frequency;
+        // עדכון הורה אב
+        await Parent.update(parentFData, {
+            where: { Pa_code: parentFDataRaw.Pa_code },
+            transaction: t
+        });
 
-        await student.save();
-        res.json(student);
+        // עדכון הורה אם
+        await Parent.update(parentMData, {
+            where: { Pa_code: parentMDataRaw.Pa_code },
+            transaction: t
+        });
+
+        // עדכון תלמיד
+        await Student.update({
+            ...studentData,
+            St_father_code: parentFDataRaw.Pa_code,
+            St_mother_code: parentMDataRaw.Pa_code
+        }, {
+            where: { St_code: studentCode },
+            transaction: t
+        });
+
+        // מחיקת קשיים קיימים
+        await DifficultyStudent.destroy({
+            where: { DS_student_code: studentCode },
+            transaction: t
+        });
+
+        // הוספת קשיים חדשים
+        if (cleanedDifficulties.length > 0) {
+            const difficultiesWithFK = cleanedDifficulties.map(d => ({
+                ...d,
+                DS_student_code: studentCode
+            }));
+            await DifficultyStudent.bulkCreate(difficultiesWithFK, { transaction: t });
+        }
+
+        // עדכון או יצירת פרטי לימודים
+        const existingStudies = await StudiesForStudent.findOne({
+            where: { SFS_student_code: studentCode },
+            transaction: t
+        });
+
+        if (existingStudies) {
+            await StudiesForStudent.update(studiesData, {
+                where: { SFS_student_code: studentCode },
+                transaction: t
+            });
+        } else {
+            await StudiesForStudent.create({
+                ...studiesData,
+                SFS_student_code: studentCode
+            }, { transaction: t });
+        }
+
+        await t.commit();
+        res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
+
     } catch (error) {
-        res.status(500).json({ error: "Error updating student" });
+        await t.rollback();
+        console.error(error);
+        res.status(500).json({ error: "שגיאה בעדכון תלמיד" });
     }
 };
-
 // מחיקת סטודנט
 exports.deleteStudent = async (req, res) => {
+    const { St_code } = req.params;
+    studentCode = St_code;
     try {
-        const { St_code } = req.params;
-        const student = await Student.findByPk(St_code);
-        if (!student) return res.status(404).json({ error: "Student not found" });
+        const student = await Student.findByPk(studentCode);
+        if (!student) {
+            return res.status(404).json({ message: "החניך לא קיים" });
+        }
 
-        await student.destroy();
-        res.json({ message: "Student deleted successfully" });
+        // מחיקת תמונת סטודנט אם קיימת
+        if (student.St_image) {
+            const imagePath = path.join(__dirname, '../images/studentsImages', `${studentCode}.jpg`);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        // מחיקת רשומות תלויות
+        await StudentForActivity.destroy({ where: { SFA_code_student: studentCode } });
+        await DifficultyStudent.destroy({ where: { DS_student_code: studentCode } });
+        await FileForStudent.destroy({ where: { FFS_student_code: studentCode } });
+        await StudentForProject.destroy({ where: { SFP_code_student: studentCode } });
+        await StudiesForStudent.destroy({ where: { SFS_student_code: studentCode } });
+
+        // מחיקת התלמיד
+        await Student.destroy({ where: { St_code: studentCode } });
+
+        return res.status(200).json({ message: "החניך נמחק בהצלחה" });
+
     } catch (error) {
-        res.status(500).json({ error: "Error deleting student" });
+        console.error("שגיאה במחיקת חניך", error);
+        return res.status(500).json({ message: "שגיאה במחיקת חניך", error });
     }
 };
+//העלאת תמונה לחניך
+exports.uploadStudentImage = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'לא נשלחה תמונה' });
+    }
+
+    try {
+        const imageDir = path.join(__dirname, '../images/studentsImages'); // תיקיית תמונות/חניכים
+        if (!fs.existsSync(imageDir)) {
+            fs.mkdirSync(imageDir, { recursive: true });
+        }
+
+        const imagePath = path.join(imageDir, `${req.file.originalname}.jpg`);
+        fs.writeFileSync(imagePath, req.file.buffer);
+
+        res.status(200).json({ message: 'התמונה נשמרה בהצלחה' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'שגיאה בשמירת תמונה' });
+    }
+};
+//שליפת תמונה חניך
+exports.getStudentImage = async (req, res) => {
+    try {
+        const { imageName } = req.params;
+
+        const imagePath = path.join(__dirname, '../images/studentsImages', `${imageName}.jpg`);
+        console.log(imagePath);
+        if (!fs.existsSync(imagePath)) {
+
+            return res.status(404).json({ error: 'התמונה לא נמצאה' });
+        }
+
+        res.sendFile(imagePath);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'שגיאה בשליפת תמונה' });
+    }
+};
+
+

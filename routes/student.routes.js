@@ -1,13 +1,20 @@
 // routes/student.routes.js
 
+
+
 const express = require("express");
 const router = express.Router();
 const studentController = require("../controllers/student.controller");
+const upload = require('../middlewares/upload');
+
 
 // הגדרת הנתיבים עבור Student
 router.get("/", studentController.getAllStudents);
 router.post("/", studentController.addStudent);
-router.put("/:St_code", studentController.updateStudent);
+router.put("/", studentController.updateStudent);
 router.delete("/:St_code", studentController.deleteStudent);
+router.post('/upload-student-image/', upload.single('image'), studentController.uploadStudentImage);//הוספת תמונה
+router.get('/getStudentImage/:imageName', studentController.getStudentImage);
+
 
 module.exports = router;
