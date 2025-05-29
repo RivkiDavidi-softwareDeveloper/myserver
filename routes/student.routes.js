@@ -16,5 +16,7 @@ router.delete("/:St_code", studentController.deleteStudent);
 router.post('/upload-student-image/', upload.single('image'), studentController.uploadStudentImage);//הוספת תמונה
 router.get('/getStudentImage/:imageName', studentController.getStudentImage);
 
+// ייבוא מקובץ אקסל
+router.post("/importExcel", upload.single("file"), studentController.importFromExcel);
 
 module.exports = router;
