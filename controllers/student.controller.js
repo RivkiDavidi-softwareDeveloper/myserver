@@ -96,11 +96,13 @@ exports.addStudent = async (req, res) => {
             }));
             await DifficultyStudent.bulkCreate(difficultiesWithFK, { transaction: t });
         }
+        const currentYear = new Date().getFullYear();
 
         // יצירת פרטי לימודים
         await StudiesForStudent.create({
             ...studiesData,
-            SFS_student_code: studentCode
+            SFS_student_code: studentCode,
+            SFS_last_upgrade_year:currentYear-1
         }, { transaction: t });
 
         await t.commit();
@@ -485,12 +487,14 @@ exports.importFromExcel = async (req, res) => {
             const SFS_current_class = row["שיעור/כיתה נוכחי"];
             const SFS_previous_institutions = row["ישיבות קודמות"];
             const SFS_previous_school = row["תלמוד תורה קודם"];
+        const currentYear = new Date().getFullYear();
 
             // יצירת פרטי לימודים
             await StudiesForStudent.create({
                 SFS_student_code: SFS_student_code, SFS_current_school: SFS_current_school, SFS_current_school_ame: SFS_current_school_ame,
                 SFS_reception_class: SFS_reception_class, SFS_current_class: SFS_current_class,
-                SFS_previous_institutions: SFS_previous_institutions, SFS_previous_school: SFS_previous_school
+                SFS_previous_institutions: SFS_previous_institutions, SFS_previous_school: SFS_previous_school, SFS_last_upgrade_year:currentYear-1
+
             }, { transaction: t });
             await t.commit();
 

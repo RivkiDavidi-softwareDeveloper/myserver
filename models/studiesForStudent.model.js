@@ -39,6 +39,10 @@ const StudiesForStudent = sequelize.define("StudiesForStudent", {
     SFS_previous_school: {
         type: DataTypes.STRING(100),
         allowNull: true
+    },
+    SFS_last_upgrade_year: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 }, {
     tableName: "studiesForStudent",

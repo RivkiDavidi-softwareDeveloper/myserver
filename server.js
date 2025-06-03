@@ -33,6 +33,7 @@ const projectRoutes= require("./routes/project.routes")
 const subcategoryForTypeActivityRoutes= require("./routes/subcategoryForTypeActivity.routes")
 
 require("dotenv").config();
+require("./cron/classUpgradeJob");
 
 const app = express();
 app.use(cors());
@@ -71,6 +72,7 @@ app.use("/api/subcategoryForTypeActivities", subcategoryForTypeActivityRoutes);
 
 
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, async () => {
     try {
         await sequelize.authenticate();
