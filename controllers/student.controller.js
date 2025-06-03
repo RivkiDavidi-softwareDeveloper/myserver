@@ -1,10 +1,13 @@
 // controllers/student.controller.js
-const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent, StudentForActivity } = require('../models');
+const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,
+    StudentForActivity, City, Worker, Synagogue } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require("xlsx");
+const { Op, Sequelize } = require('sequelize');
+
 // שליפת כל החניכים 
 exports.getAllStudents = async (req, res) => {
     try {
@@ -266,46 +269,70 @@ exports.importFromExcel = async (req, res) => {
             return res.status(400).json({ message: "לא נשלח קובץ" });
         }
         console.log(req.file.originalname)
+
         const imageDir = path.join(__dirname, '../uploads');
         if (!fs.existsSync(imageDir)) {
             fs.mkdirSync(imageDir, { recursive: true });
         }
 
         const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
+        fs.writeFileSync(filePath, req.file.buffer);
+
         const workbook = XLSX.readFile(filePath);
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { range: 1 }); // skip first row
 
         for (const row of rows) {
             const t = await Student.sequelize.transaction();
+            
             let Pa_name = row["שם אב"];
+            if(Pa_name==null){
+                Pa_name=""
+            }
             let Pa_ID = row["ת.ז אב"];
             let Pa_work = row["עיסוק אב"];
             let Pa_cell_phone = row["פל' אב"];
 
             // יצירת הורה אב
             const father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
-            Pa_name = row["שם אם"];
+            Pa_name =row["שם אם"];
+                        if(Pa_name==null){
+                Pa_name=""
+            }
             Pa_ID = row["ת.ז אם"];
             Pa_work = row["עיסוק אם"];
             Pa_cell_phone = row["פל' אם"];
 
             // יצירת הורה אם
             const mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+            //פריט תלמיד
             const St_ID = row["ת.ז"];
             const St_name = row["שם פרטי"];
             const St_Fname = row["שם משפחה"];
             const gender = row["מגדר"];
             let St_gender = 1
             if (gender == "בת") { St_gender = 2 }
-            const St_birthday = row["תאריך לידה"]
-            const city = row["עיר"];
+            console.log(gender+"מגדר")
+            const rawDate = row["תאריך לידה"];
+            let St_birthday = "";
+            let jsDate;
+            if (typeof rawDate === 'number') {
+                jsDate = XLSX.SSF.parse_date_code(rawDate);
+                const year = jsDate.y;
+                const month = String(jsDate.m).padStart(2, '0');
+                const day = String(jsDate.d).padStart(2, '0');
+                St_birthday = `${year}-${month}-${day}`;
+            }
+            else {
+                console.error("פורמט לא מזוהה:", rawDate);
+            }
+
             const St_address = row["כתובת"];
             const St_cell_phone = row["פלאפון חניך"];
             const St_phone = row["טלפון בית"];
             const St_email = row["מייל"];
             const St_father_code = father.Pa_code;
-            const St_mother_code = father.Pa_code;
+            const St_mother_code = mother.Pa_code;
             const activityStatus = row["מצב פעילות"];
             let St_activity_status = 1;
             if (activityStatus == "מושהה") {
@@ -316,22 +343,100 @@ exports.importFromExcel = async (req, res) => {
                     St_activity_status = 3
                 }
             }
+            const nameCity = row["עיר"];
             let St_city_code = 1;
-
+            if (nameCity) {
+                const cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
+                if (cityRecord) {
+                    St_city_code = cityRecord.Ci_code;
+                }
+                else {
+                    const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                    if (cityRecord) {
+                        St_city_code = cityRecord.Ci_code;
+                    }
+                }
+            }
+            const nameWorker = row["פעיל/חונך ישיר"];
             let St_worker_code = 1;
-
+            if (nameWorker) {
+                const workerRecord = await Worker.findOne({
+                    where: {
+                        [Op.and]: [{
+                            [Op.or]: [
+                                Sequelize.where(
+                                    Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')),
+                                    nameWorker // השוואת שם מלא
+                                ),
+                                Sequelize.where(
+                                    Sequelize.fn('concat', Sequelize.col('Wo_name'), '  ', Sequelize.col('Wo_Fname')),
+                                    nameWorker // השוואת שם מלא
+                                ),
+                                Sequelize.where(
+                                    Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname'), ' '),
+                                    nameWorker // השוואת שם מלא
+                                ),
+                                Sequelize.where(
+                                    Sequelize.fn('concat', ' ', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')),
+                                    nameWorker // השוואת שם מלא
+                                ),
+                                Sequelize.where(
+                                    Sequelize.fn('concat', Sequelize.col('Wo_name'), ' ', Sequelize.col('Wo_Fname')),
+                                    nameWorker // השוואת שם מלא
+                                )
+                            ]
+                        }]
+                    }
+                });
+                if (workerRecord) {
+                    St_worker_code = workerRecord.Wo_code;
+                }
+                else {
+                    const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+                    if (workerRecord) {
+                        St_worker_code = workerRecord.Wo_code;
+                    }
+                }
+            }
+            else {
+                const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+                if (workerRecord) {
+                    St_worker_code = workerRecord.Wo_code;
+                }
+            }
+            const risk = row["מצב סיכון"];
             let St_risk_code = 1;
-            let St_description_reception_status;
+            if (risk == "סיכון מוגבר") {
+                St_risk_code = 2
+            }
+            else {
+                if (risk == "לא במסגרת") {
+                    St_risk_code = 3
+                }
+            }
+
+            let St_description_reception_status = row["תיאור מצב קליטה"];
             const St_contact = row["איש צוות מקושר"];
             const St_contact_phone = row["פל' איש צוות מקושר"];
             const St_requester = row['הפניה התקבלה ע"י'];
             const St_socioeconomic_status = row["מצב סוציואקנומי (1-10)"];
             let St_code_synagogue = 1;
+            const SynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
+            if (SynagogueRecord) {
+                St_code_synagogue = SynagogueRecord.Sy_code;
+            }
+            const frequency = row["סוג"];
             let St_code_frequency = 1;
-            let St_amount_frequency = 1;
-
+            if (frequency == "בשבועות") {
+                St_code_frequency = 2
+            }
+            else {
+                if (frequency == "בחודשים") {
+                    St_code_frequency = 3
+                }
+            }
+            let St_amount_frequency = row["כמות"];
             if (!St_ID || !St_name || !St_Fname) continue;
-
             // יצירת תלמיד עם קודי ההורים
             const student = await Student.create({
                 St_ID: St_ID, St_name: St_name, St_Fname: St_Fname, St_gender: St_gender, St_birthday: St_birthday
@@ -353,22 +458,18 @@ exports.importFromExcel = async (req, res) => {
                     DS_student_code: studentCode
                 });
             }
-
             if (row["קשיים חברתיים"] === "כן") {
                 difficulties.push({
                     DS_diffculty_code: 2,
                     DS_student_code: studentCode
                 });
             }
-
             if (row["קשיים רוחניים"] === "כן") {
                 difficulties.push({
-                    DS_diffculty_code: 4,
+                    DS_diffculty_code: 3,
                     DS_student_code: studentCode
                 });
             }
-
-
             // יצירת קשיים
             if (difficulties.length > 0) {
                 const difficultiesWithFK = difficulties.map(d => ({

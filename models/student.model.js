@@ -124,7 +124,7 @@ const Student = sequelize.define("Student", {
     },
     St_code_synagogue: {
         type: DataTypes.BIGINT,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: "Synagogue",
             key: "Sy_code"

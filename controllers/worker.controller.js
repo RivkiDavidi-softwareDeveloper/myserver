@@ -1,4 +1,5 @@
 const { Worker, TypeGender, TypeWorker, SystemLogin } = require("../models");
+const { Op, Sequelize } = require('sequelize');
 
 // שליפת כל העובדים 
 exports.getAllWorkers = async (req, res) => {
@@ -136,7 +137,6 @@ exports.deleteWorker = async (req, res) => {
 };
 
 
-const { Op, Sequelize } = require('sequelize');
 
 // פעולה לקבלת עובד לפי שם מלא וסיסמא
 exports.getWorkerByNameAndPassword = async (req, res) => {
