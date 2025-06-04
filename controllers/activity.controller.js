@@ -173,6 +173,7 @@ exports.getAllActivities = async (req, res) => {
         res.status(500).json({ error: "Error fetching activities" });
     }
 };
+//שליפת תאריך הפעילות האחרונה לפי קוד חניך
 exports.getLastActivityDateForStudent = async (req, res) => {
     const { studentCode } = req.params;
 
@@ -183,7 +184,7 @@ exports.getLastActivityDateForStudent = async (req, res) => {
                 where: { SFA_code_student: studentCode },
                 attributes: []
             }],
-            order: [['AFS_date', 'ASC']], // מיון יורד לפי מחרוזת בפורמט YYYY-MM-DD
+            order: [['AFS_date', 'DESC']], // מיון יורד לפי מחרוזת בפורמט YYYY-MM-DD
             attributes: ['AFS_date']
         });
 
