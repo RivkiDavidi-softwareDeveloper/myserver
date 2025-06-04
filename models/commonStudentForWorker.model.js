@@ -33,6 +33,7 @@ const CommonStudentForWorker = sequelize.define("CommonStudentForWorker", {
 CommonStudentForWorker.associate = function (models) {
     CommonStudentForWorker.belongsTo(models.Worker, { foreignKey: "CSFP_code_worker" });
     CommonStudentForWorker.belongsTo(models.Student, { foreignKey: "CSFP_code_student" });
+
 };
 
 module.exports = CommonStudentForWorker;

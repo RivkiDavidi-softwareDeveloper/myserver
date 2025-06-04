@@ -1,6 +1,6 @@
 // controllers/student.controller.js
 const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,
-    StudentForActivity, City, Worker, Synagogue } = require('../models');
+    StudentForActivity, City, Worker, Synagogue,CommonStudentForWorker } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
@@ -102,7 +102,7 @@ exports.addStudent = async (req, res) => {
         await StudiesForStudent.create({
             ...studiesData,
             SFS_student_code: studentCode,
-            SFS_last_upgrade_year:currentYear-1
+            SFS_last_upgrade_year: currentYear - 1
         }, { transaction: t });
 
         await t.commit();
@@ -215,7 +215,7 @@ exports.deleteStudent = async (req, res) => {
         await FileForStudent.destroy({ where: { FFS_student_code: studentCode } });
         await StudentForProject.destroy({ where: { SFP_code_student: studentCode } });
         await StudiesForStudent.destroy({ where: { SFS_student_code: studentCode } });
-
+        await CommonStudentForWorker.destroy({ where: { CSFP_code_student: studentCode } });
         // מחיקת התלמיד
         await Student.destroy({ where: { St_code: studentCode } });
 
@@ -286,10 +286,10 @@ exports.importFromExcel = async (req, res) => {
 
         for (const row of rows) {
             const t = await Student.sequelize.transaction();
-            
+
             let Pa_name = row["שם אב"];
-            if(Pa_name==null){
-                Pa_name=""
+            if (Pa_name == null) {
+                Pa_name = ""
             }
             let Pa_ID = row["ת.ז אב"];
             let Pa_work = row["עיסוק אב"];
@@ -297,9 +297,9 @@ exports.importFromExcel = async (req, res) => {
 
             // יצירת הורה אב
             const father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
-            Pa_name =row["שם אם"];
-                        if(Pa_name==null){
-                Pa_name=""
+            Pa_name = row["שם אם"];
+            if (Pa_name == null) {
+                Pa_name = ""
             }
             Pa_ID = row["ת.ז אם"];
             Pa_work = row["עיסוק אם"];
@@ -314,7 +314,7 @@ exports.importFromExcel = async (req, res) => {
             const gender = row["מגדר"];
             let St_gender = 1
             if (gender == "בת") { St_gender = 2 }
-            console.log(gender+"מגדר")
+            console.log(gender + "מגדר")
             const rawDate = row["תאריך לידה"];
             let St_birthday = "";
             let jsDate;
@@ -487,13 +487,13 @@ exports.importFromExcel = async (req, res) => {
             const SFS_current_class = row["שיעור/כיתה נוכחי"];
             const SFS_previous_institutions = row["ישיבות קודמות"];
             const SFS_previous_school = row["תלמוד תורה קודם"];
-        const currentYear = new Date().getFullYear();
+            const currentYear = new Date().getFullYear();
 
             // יצירת פרטי לימודים
             await StudiesForStudent.create({
                 SFS_student_code: SFS_student_code, SFS_current_school: SFS_current_school, SFS_current_school_ame: SFS_current_school_ame,
                 SFS_reception_class: SFS_reception_class, SFS_current_class: SFS_current_class,
-                SFS_previous_institutions: SFS_previous_institutions, SFS_previous_school: SFS_previous_school, SFS_last_upgrade_year:currentYear-1
+                SFS_previous_institutions: SFS_previous_institutions, SFS_previous_school: SFS_previous_school, SFS_last_upgrade_year: currentYear - 1
 
             }, { transaction: t });
             await t.commit();
