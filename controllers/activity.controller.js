@@ -191,8 +191,6 @@ exports.getLastActivityDateForStudent = async (req, res) => {
         if (!lastActivity) {
             return res.status(200).json('');
         }
-        console.log(lastActivity.AFS_date)
-
         return res.status(200).json(lastActivity.AFS_date);
     } catch (error) {
         console.log(error)

@@ -24,7 +24,7 @@ exports.getAllProjects = async (req, res) => {
             projects = projects.filter(p =>
                 p.Pr_name.toLowerCase().includes(searchValue) ||
                 p.Pr_content.toLowerCase().includes(searchValue) ||
-                p.Pr_description.toLowerCase().includes(searchValue) 
+                p.Pr_description.toLowerCase().includes(searchValue)
 
             );
         }
@@ -53,43 +53,51 @@ exports.getProjectById = async (req, res) => {
 };
 
 // יצירת פרויקט חדש
-exports.createProject = async (req, res) => {
+exports.addProject = async (req, res) => {
     try {
-        const newProject = await Project.create(req.body);
+        const { Pr_code, ...data } = req.body;
+        const newProject = await Project.create(data);
         res.status(201).json(newProject);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
 
+
+
 // עדכון פרויקט קיים
 exports.updateProject = async (req, res) => {
-    const { id } = req.params;
     try {
-        const [updated] = await Project.update(req.body, {
-            where: { Pr_code: id }
-        });
-        if (updated) {
-            const updatedProject = await Project.findByPk(id);
-            return res.json(updatedProject);
-        }
-        res.status(404).json({ message: "Project not found" });
+        const { Pr_code } = req.params;
+        const { Pr_name, Pr_content, Pr_description, Pr_Place, Pr_date, Pr_gender } = req.body;
+
+        const project = await Project.findByPk(Pr_code);
+        if (!project) return res.status(404).json({ error: "project not found" });
+        project.Pr_name = Pr_name;
+        project.Pr_content = Pr_content;
+        project.Pr_description = Pr_description;
+        project.Pr_Place = Pr_Place;
+        project.Pr_date = Pr_date;
+        project.Pr_gender = Pr_gender;
+        await project.save();
+        const updatedproject = await Project.findByPk(Pr_code);
+        res.json(updatedproject);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        console.log(error)
+        res.status(500).json({ error: "Error updating project" });
     }
 };
 
+
 // מחיקת פרויקט
 exports.deleteProject = async (req, res) => {
-    const { id } = req.params;
     try {
-        const deleted = await Project.destroy({
-            where: { Pr_code: id }
-        });
-        if (deleted) {
-            return res.json({ message: "Project deleted" });
-        }
-        res.status(404).json({ message: "Project not found" });
+        const { Pr_code } = req.params;
+        const project = await Project.findByPk(Pr_code);
+        if (!project) return res.status(404).json({ error: "project not found" });
+
+        await project.destroy();
+        res.json({ message: "project deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -24,11 +24,9 @@ const frequencyRoutes = require("./routes/frequency.routes");
 const studiesForSharerRoutes = require("./routes/studiesForSharer.routes");
 const studiesForStudentRoutes = require("./routes/studiesForStudent.routes");
 const studentForProjectRoutes = require("./routes/studentForProject.routes");
-
 const difficultyStudentRoutes= require("./routes/difficultyStudent.routes")
 const activityRoutes= require("./routes/activity.routes")
 const categoriesForActivityRoutes= require("./routes/categoriesForActivity.routes")
-
 const projectRoutes= require("./routes/project.routes")
 const subcategoryForTypeActivityRoutes= require("./routes/subcategoryForTypeActivity.routes")
 
