@@ -277,12 +277,13 @@ exports.importFromExcel = async (req, res) => {
             fs.mkdirSync(imageDir, { recursive: true });
         }
 
-        const now = new Date();
+  /*קבייעת שם תמונה עם תאריך ושעה  
+       const now = new Date();
         const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
         const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
         const timestamp = `${formattedDate}_${formattedTime}`;
-
-        const filePath = path.join(imageDir, `${req.file.originalname} ${timestamp}.xlsx`);
+ */
+        const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
         fs.writeFileSync(filePath, req.file.buffer);
 
         const workbook = XLSX.readFile(filePath);

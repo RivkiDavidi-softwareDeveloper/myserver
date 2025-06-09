@@ -1,6 +1,75 @@
 
-const db = require("../models");
-const GuideForProject = db.GuideForProject;
+const { GuideForProject, StudentForProject, SharerForProject, Student,Sharer } = require('../models');
+
+exports.getAllGuidesForProjectWithSudentsAndSharers = async (req, res) => {
+    try {
+        const { codeProject } = req.query;
+        const projectCode = Number(codeProject);
+
+        if (projectCode === -1) {
+            return res.status(404).json({ error: "לא נמצא" });
+        }
+
+        // שליפת כל המדריכים בפרויקט
+        const guides = await GuideForProject.findAll({
+            where: { GFP_code_project: projectCode },
+            order: [['GFP_name', 'ASC']]
+        });
+
+        // שליפת כל החניכים והמשתתפים בפרויקט (למיפוי לפי מדריך)
+        const students = await StudentForProject.findAll({
+            where: { SFP_code_project: projectCode },
+            include: [{ model:  Student }]
+        });
+
+        const sharers = await SharerForProject.findAll({
+            where: { SFP_code_project: projectCode },
+            include: [{ model:Sharer  }]
+        });
+
+        // מיפוי מדריכים עם רשימות תואמות של חניכים ומשתתפים
+        const result = guides.map(g => {
+            const guideStudents = students.filter(s => s.SFP_code_guide === g.GFP_code);
+            const guideSharers = sharers.filter(s => s.SFP_code_guide === g.GFP_code);
+
+            return {
+                guide: g,
+                students: guideStudents,
+                sharers: guideSharers
+            };
+        });
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "שגיאה בשליפת מדריכים", error });
+    }
+};
+
+//שליפה לפי קוד פרויקט
+exports.getAllGuidesForProject = async (req, res) => {
+    try {
+        const { codeProject } = req.query;
+        const projectCode = Number(codeProject);
+        if (projectCode !== -1) {
+
+            let guidesForProject = await GuideForProject.findAll({
+                where: { GFP_code_project: projectCode }
+            });
+            guidesForProject.sort((a, b) => {
+                return a.GFP_name.localeCompare(b.GFP_name);
+            });
+            res.status(200).json(guidesForProject);
+        }
+        else {
+            res.status(404).json({ error: "לא נמצא" });
+        }
+    } catch (error) {
+        res.status(500).json({ message: "שגיאה בשליפת מדריכים", error });
+    }
+};
+
 //הוספה
 exports.createGuideForProject = async (req, res) => {
     try {
@@ -16,56 +85,6 @@ exports.createGuideForProject = async (req, res) => {
         res.status(500).json({ message: "שגיאה ביצירת מדריך לפרויקט", error });
     }
 };
-//שליפה לפי קוד פרויקט
-exports.getAllGuidesForProject = async (req, res) => {
-    try {
-        const { codeProject } = req.query;
-        const projectCode = Number(codeProject);
-        if (projectCode !== -1) {
-
-            let studentsForProject = await StudentForProject.findAll({
-                where: { SFP_code_project: projectCode },
-                include: [
-
-                    { model: Student },
-                    { model: GuideForProject }
-                ]
-            });
-            studentsForProject.sort((a, b) => {
-                return a.Student.St_name.localeCompare(b.Student.St_name);
-            });
-            res.json(studentsForProject);
-        }
-        else{
-         res.status(404).json({ error: "לא נמצא" });
-
-        }
-
-        
-        const guides = await GuideForProject.findAll();
-        res.status(200).json(guides);
-    } catch (error) {
-        res.status(500).json({ message: "שגיאה בשליפת מדריכים", error });
-    }
-};
-exports.getAllStudentForProjects = async (req, res) => {
-    try {
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-        console.log(error)
-    }
-};
-//שליפה
-exports.getAllGuidesForProject = async (req, res) => {
-    try {
-        const guides = await GuideForProject.findAll();
-        res.status(200).json(guides);
-    } catch (error) {
-        res.status(500).json({ message: "שגיאה בשליפת מדריכים", error });
-    }
-};
-
 //עדכון
 exports.updateGuideForProject = async (req, res) => {
     try {

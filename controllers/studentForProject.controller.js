@@ -21,8 +21,8 @@ exports.getAllStudentForProjects = async (req, res) => {
             });
             res.json(studentsForProject);
         }
-        else{
-         res.status(404).json({ error: "לא נמצא" });
+        else {
+            res.status(404).json({ error: "לא נמצא" });
 
         }
     } catch (error) {
@@ -36,13 +36,26 @@ exports.getAllStudentForProjects = async (req, res) => {
 // יצירה חדשה
 exports.createStudentForProject = async (req, res) => {
     try {
-        const newRow = await StudentForProject.create(req.body);
+        const { SFP_code, ...data } = req.body;
+        const newRow = await StudentForProject.create(data);
         res.status(201).json(newRow);
     } catch (error) {
+        console.log(error);
         res.status(500).json({ error: error.message });
     }
 };
+// הוספת עיר חדשה
+exports.addCity = async (req, res) => {
+    try {
+        const { Ci_code, ...data } = req.body;
+        const city = await City.create(data);
+        res.status(201).json(city);
+    } catch (error) {
+        console.log(error);
 
+        res.status(500).json({ error: "Error adding city" });
+    }
+};
 // עדכון
 exports.updateStudentForProject = async (req, res) => {
     try {
