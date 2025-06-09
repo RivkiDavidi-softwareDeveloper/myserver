@@ -1,3 +1,4 @@
+const { literal } = require("sequelize");
 const { StudentForProject, Project, Student, GuideForProject } = require("../models");
 
 // שליפה של כל השורות
@@ -5,12 +6,25 @@ exports.getAllStudentForProjects = async (req, res) => {
     try {
         const { codeProject } = req.query;
         const projectCode = Number(codeProject);
+        if (projectCode !== -1) {
 
-        const studentsForProject = await StudentForProject.findAll({
-            where: { SFP_code_project: projectCode }
-        });
+            let studentsForProject = await StudentForProject.findAll({
+                where: { SFP_code_project: projectCode },
+                include: [
 
-        res.json(studentsForProject);
+                    { model: Student },
+                    { model: GuideForProject }
+                ]
+            });
+            studentsForProject.sort((a, b) => {
+                return a.Student.St_name.localeCompare(b.Student.St_name);
+            });
+            res.json(studentsForProject);
+        }
+        else{
+         res.status(404).json({ error: "לא נמצא" });
+
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
         console.log(error)
@@ -18,23 +32,6 @@ exports.getAllStudentForProjects = async (req, res) => {
 };
 
 
-// שליפה לפי קוד
-exports.getStudentForProjectById = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const data = await StudentForProject.findByPk(id, {
-            include: [
-                { model: Project },
-                { model: Student },
-                { model: GuideForProject }
-            ]
-        });
-        if (!data) return res.status(404).json({ error: "לא נמצא" });
-        res.json(data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
 
 // יצירה חדשה
 exports.createStudentForProject = async (req, res) => {

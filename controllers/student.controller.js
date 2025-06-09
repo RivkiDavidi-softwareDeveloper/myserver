@@ -1,12 +1,12 @@
 // controllers/student.controller.js
 const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,
-    StudentForActivity, City, Worker, Synagogue,CommonStudentForWorker } = require('../models');
+    StudentForActivity, City, Worker, Synagogue, CommonStudentForWorker } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require("xlsx");
-const { Op, Sequelize } = require('sequelize');
+const { Op, Sequelize, DATE } = require('sequelize');
 
 // שליפת כל החניכים 
 exports.getAllStudents = async (req, res) => {
@@ -277,7 +277,12 @@ exports.importFromExcel = async (req, res) => {
             fs.mkdirSync(imageDir, { recursive: true });
         }
 
-        const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
+        const now = new Date();
+        const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+        const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+        const timestamp = `${formattedDate}_${formattedTime}`;
+
+        const filePath = path.join(imageDir, `${req.file.originalname} ${timestamp}.xlsx`);
         fs.writeFileSync(filePath, req.file.buffer);
 
         const workbook = XLSX.readFile(filePath);
@@ -294,19 +299,49 @@ exports.importFromExcel = async (req, res) => {
             let Pa_ID = row["ת.ז אב"];
             let Pa_work = row["עיסוק אב"];
             let Pa_cell_phone = row["פל' אב"];
+            if (Pa_ID != null) {
 
-            // יצירת הורה אב
-            const father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
-            Pa_name = row["שם אם"];
+                // יצירת/עדכון הורה אב
+                const father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                if (father) {
+                    father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
+                        where: { Pa_code: father.Pa_code },
+                        transaction: t
+                    });
+                }
+                else {
+                    father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+                }
+            }
+            else {
+                father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+            }
+
+
+            Pa_name = row["שם האם"];
             if (Pa_name == null) {
                 Pa_name = ""
             }
-            Pa_ID = row["ת.ז אם"];
-            Pa_work = row["עיסוק אם"];
+            Pa_ID = row["ת.ז. האם"];
+            Pa_work = "";
             Pa_cell_phone = row["פל' אם"];
+            if (Pa_ID != null) {
 
-            // יצירת הורה אם
-            const mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+                // יצירת/עדכון הורה אם
+                const mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                if (mother) {
+                    mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
+                        where: { Pa_code: mother.Pa_code },
+                        transaction: t
+                    });
+                }
+                else {
+                    mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+                }
+            }
+            else {
+                mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+            }
             //פריט תלמיד
             const St_ID = row["ת.ז"];
             const St_name = row["שם פרטי"];

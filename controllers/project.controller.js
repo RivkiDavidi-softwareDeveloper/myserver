@@ -99,6 +99,7 @@ exports.deleteProject = async (req, res) => {
         await project.destroy();
         res.json({ message: "project deleted successfully" });
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: error.message });
     }
 };

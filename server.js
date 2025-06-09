@@ -24,6 +24,9 @@ const frequencyRoutes = require("./routes/frequency.routes");
 const studiesForSharerRoutes = require("./routes/studiesForSharer.routes");
 const studiesForStudentRoutes = require("./routes/studiesForStudent.routes");
 const studentForProjectRoutes = require("./routes/studentForProject.routes");
+const sharerForProjectRoutes = require("./routes/sharerForProject.routes");
+const guideForProjectRoutes = require("./routes/guideForProject.routes");
+
 const difficultyStudentRoutes= require("./routes/difficultyStudent.routes")
 const activityRoutes= require("./routes/activity.routes")
 const categoriesForActivityRoutes= require("./routes/categoriesForActivity.routes")
@@ -49,6 +52,8 @@ app.use("/api/typeTasks", typeTaskRoutes);
 app.use("/api/typeOfActivities", typeOfActivityRoutes);
 app.use("/api/systemLogins", systemLoginRoutes);
 app.use("/api/studentForProjects", studentForProjectRoutes);
+app.use("/api/sharerForProjects", sharerForProjectRoutes);
+app.use("/api/guideForProjects", guideForProjectRoutes);
 
 app.use("/api/studiesForStudents", studiesForStudentRoutes );
 app.use("/api/studiesForShareres", studiesForSharerRoutes);
