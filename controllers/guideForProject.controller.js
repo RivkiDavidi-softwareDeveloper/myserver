@@ -1,5 +1,5 @@
 
-const { GuideForProject, StudentForProject, SharerForProject, Student,Sharer } = require('../models');
+const { GuideForProject, StudentForProject, SharerForProject, Student, Sharer } = require('../models');
 
 exports.getAllGuidesForProjectWithSudentsAndSharers = async (req, res) => {
     try {
@@ -17,14 +17,19 @@ exports.getAllGuidesForProjectWithSudentsAndSharers = async (req, res) => {
         });
 
         // שליפת כל החניכים והמשתתפים בפרויקט (למיפוי לפי מדריך)
+
         const students = await StudentForProject.findAll({
             where: { SFP_code_project: projectCode },
-            include: [{ model:  Student }]
+            include: [{
+                model: Student
+            }],
+        order: [[Student, 'St_name', 'ASC'], [Student, 'St_Fname', 'ASC']]
         });
 
         const sharers = await SharerForProject.findAll({
             where: { SFP_code_project: projectCode },
-            include: [{ model:Sharer  }]
+            include: [{ model: Sharer }],
+        order: [[Sharer, 'Sh_name', 'ASC'], [Sharer, 'Sh_Fname', 'ASC']]
         });
 
         // מיפוי מדריכים עם רשימות תואמות של חניכים ומשתתפים
@@ -73,18 +78,15 @@ exports.getAllGuidesForProject = async (req, res) => {
 //הוספה
 exports.createGuideForProject = async (req, res) => {
     try {
-        const { GFP_code_project, GFP_name } = req.body;
-
-        if (!GFP_code_project) {
-            return res.status(400).json({ message: "חובה לציין קוד פרויקט" });
-        }
-
-        const guide = await GuideForProject.create({ GFP_code_project, GFP_name });
+        const { GFP_code, ...data } = req.body;
+        const guide = await GuideForProject.create(data);
         res.status(201).json(guide);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: "שגיאה ביצירת מדריך לפרויקט", error });
     }
 };
+
 //עדכון
 exports.updateGuideForProject = async (req, res) => {
     try {

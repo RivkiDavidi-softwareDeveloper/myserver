@@ -31,6 +31,11 @@ const StudiesForSharer = sequelize.define("StudiesForSharer", {
     SFS_previous_school: {
         type: DataTypes.STRING(100),
         allowNull: true
+    },
+    
+    SFS_last_upgrade_year: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
 }, {
     tableName: "studiesForSharer",

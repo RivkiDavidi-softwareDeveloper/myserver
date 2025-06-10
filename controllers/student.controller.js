@@ -277,12 +277,12 @@ exports.importFromExcel = async (req, res) => {
             fs.mkdirSync(imageDir, { recursive: true });
         }
 
-  /*קבייעת שם תמונה עם תאריך ושעה  
-       const now = new Date();
-        const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-        const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
-        const timestamp = `${formattedDate}_${formattedTime}`;
- */
+        /*קבייעת שם תמונה עם תאריך ושעה  
+             const now = new Date();
+              const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+              const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+              const timestamp = `${formattedDate}_${formattedTime}`;
+       */
         const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
         fs.writeFileSync(filePath, req.file.buffer);
 
@@ -393,6 +393,12 @@ exports.importFromExcel = async (req, res) => {
                     if (cityRecord) {
                         St_city_code = cityRecord.Ci_code;
                     }
+                    else {
+                        const cityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
+                        if (cityRecord) {
+                            St_city_code = cityRecord.Ci_code;
+                        }
+                    }
                 }
             }
             const nameWorker = row["פעיל/חונך ישיר"];
@@ -434,13 +440,26 @@ exports.importFromExcel = async (req, res) => {
                     if (workerRecord) {
                         St_worker_code = workerRecord.Wo_code;
                     }
+                    else {
+                        const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע" ,Wo_ID:"000000000" ,Wo_type_worker:1,Wo_gender:1,Wo_password:"0000"}, { transaction: t });
+                        if (workerRecord) {
+                            St_worker_code = workerRecord.Wo_code;
+                        }
+                    }
                 }
             }
             else {
-                const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+                const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע"} });
                 if (workerRecord) {
+                  
                     St_worker_code = workerRecord.Wo_code;
                 }
+                else {
+                        const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע" ,Wo_ID:"000000000" }, { transaction: t });
+                        if (workerRecord) {
+                            St_worker_code = workerRecord.Wo_code;
+                        }
+                    }
             }
             const risk = row["מצב סיכון"];
             let St_risk_code = 1;
@@ -483,7 +502,8 @@ exports.importFromExcel = async (req, res) => {
                 St_city_code: St_city_code, St_worker_code: St_worker_code, St_risk_code: St_risk_code,
                 St_description_reception_status: St_description_reception_status
                 , St_contact: St_contact, St_contact_phone: St_contact_phone, St_requester: St_requester, St_socioeconomic_status: St_socioeconomic_status,
-                St_code_synagogue: St_code_synagogue, St_code_frequency: St_code_frequency, St_amount_frequency: St_amount_frequency
+                St_code_synagogue: St_code_synagogue, St_code_frequency: St_code_frequency, St_amount_frequency: St_amount_frequency,
+                St_name_school_bein_hazmanim: "", St_nusah_tfila: "", St_veshinantem: ""
             }, { transaction: t });
 
             const studentCode = student.St_code;

@@ -146,6 +146,7 @@ exports.importFromExcel = async (req, res) => {
                 const Sh_phone = row["טלפון בית"];
                 const Sh_name_school_bein_hazmanim = row["שם ישיבת בין הזמנים"];
                 const Sh_nusah_tfila = row["נוסח תפילה"];
+                const Sh_veshinantem = row['"ושננתם"'];
 
                 const Sh_father_code = father.Pa_code;
                 const Sh_mother_code = mother.Pa_code;
@@ -172,7 +173,8 @@ exports.importFromExcel = async (req, res) => {
                     Sh_birthday: Sh_birthday, Sh_father_code: Sh_father_code,
                     Sh_mother_code: Sh_mother_code, Sh_city_code: Sh_city_code, Sh_address: Sh_address, Sh_cell_phone: Sh_cell_phone,
                     Sh_phone: Sh_phone, Sh_name_school_bein_hazmanim: Sh_name_school_bein_hazmanim,
-                    Sh_nusah_tfila: Sh_nusah_tfila
+                    Sh_nusah_tfila: Sh_nusah_tfila ,Sh_veshinantem:Sh_veshinantem
+
                 }, { transaction: t });
 
                 sharerCode = sharer.Sh_code;
@@ -268,6 +270,7 @@ exports.importFromExcel = async (req, res) => {
                 const Sh_phone = row["טלפון בית"];
                 const Sh_name_school_bein_hazmanim = row["שם ישיבת בין הזמנים"];
                 const Sh_nusah_tfila = row["נוסח תפילה"];
+                const Sh_veshinantem = row['"ושננתם"'];
 
                 const Sh_father_code = father.Pa_code;
                 const Sh_mother_code = mother.Pa_code;
@@ -293,7 +296,7 @@ exports.importFromExcel = async (req, res) => {
                     Sh_birthday: Sh_birthday, Sh_father_code: Sh_father_code,
                     Sh_mother_code: Sh_mother_code, Sh_city_code: Sh_city_code, Sh_address: Sh_address, Sh_cell_phone: Sh_cell_phone,
                     Sh_phone: Sh_phone, Sh_name_school_bein_hazmanim: Sh_name_school_bein_hazmanim,
-                    Sh_nusah_tfila: Sh_nusah_tfila
+                    Sh_nusah_tfila: Sh_nusah_tfila,Sh_veshinantem:Sh_veshinantem
                 }, {
                     where: { Sh_code: sharerExists.Sh_code },
                     transaction: t

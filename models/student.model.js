@@ -141,6 +141,19 @@ const Student = sequelize.define("Student", {
     St_amount_frequency: {
         type: DataTypes.INTEGER,
         allowNull: true
+    },
+    St_name_school_bein_hazmanim: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    },
+    St_nusah_tfila: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    }
+    ,
+    St_veshinantem: {
+        type: DataTypes.STRING(40),
+        allowNull: true
     }
 }, {
     tableName: "Student",

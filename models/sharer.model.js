@@ -76,6 +76,11 @@ const Sharer = sequelize.define("Sharer", {
         type: DataTypes.STRING(40),
         allowNull: true
     }
+    ,
+    Sh_veshinantem: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    }
 }, {
     tableName: "sharer",
     timestamps: false

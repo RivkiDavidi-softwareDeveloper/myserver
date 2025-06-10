@@ -44,18 +44,7 @@ exports.createStudentForProject = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-// הוספת עיר חדשה
-exports.addCity = async (req, res) => {
-    try {
-        const { Ci_code, ...data } = req.body;
-        const city = await City.create(data);
-        res.status(201).json(city);
-    } catch (error) {
-        console.log(error);
 
-        res.status(500).json({ error: "Error adding city" });
-    }
-};
 // עדכון
 exports.updateStudentForProject = async (req, res) => {
     try {

@@ -1,4 +1,5 @@
-const { Worker, TypeGender, TypeWorker, SystemLogin } = require("../models");
+const { Worker, TypeGender, TypeWorker, SystemLogin , Task, Student, FileForWorker, CommonStudentForWorker, RecipientForMessage, Activity } = require('../models');
+
 const { Op, Sequelize } = require('sequelize');
 
 // שליפת כל העובדים 
@@ -120,21 +121,49 @@ exports.updateWorker = async (req, res) => {
     }
 };
 
-// מחיקת עובד
+
 exports.deleteWorker = async (req, res) => {
+    const transaction = await Worker.sequelize.transaction();
     try {
         const { Wo_code } = req.params;
-        const worker = await Worker.findByPk(Wo_code);
-        if (!worker) return res.status(404).json({ error: "Worker not found" });
 
-        await worker.destroy();
-        res.json({ message: "Worker deleted successfully" });
+        const worker = await Worker.findByPk(Wo_code, { transaction });
+        if (!worker) {
+            await transaction.rollback();
+            return res.status(404).json({ error: "Worker not found" });
+        }
+
+        // מחיקת משימות של העובד
+        await Task.destroy({ where: { Ta_worker_code: Wo_code }, transaction });
+
+        // עדכון סטודנטים שהעובד היה מקושר אליהם (מניעת שגיאת FK)
+        await Student.update({ St_worker_code: null }, { where: { St_worker_code: Wo_code }, transaction });
+
+        // מחיקת קבצים של העובד
+        await FileForWorker.destroy({ where: { FFW_worker_code: Wo_code }, transaction });
+
+        // מחיקת חניכים משותפים של העובד
+        await CommonStudentForWorker.destroy({ where: { CSFP_code_worker: Wo_code }, transaction });
+
+        // מחיקת מקבל הודעה שהוא העובד
+        await RecipientForMessage.destroy({ where: { RFM_worker_code: Wo_code }, transaction });
+
+        // מחיקת פעילויות שהעובד ביצע
+        await Activity.destroy({ where: { AFS_worker_code: Wo_code }, transaction });
+
+        // מחיקת העובד עצמו
+        await worker.destroy({ transaction });
+
+        await transaction.commit();
+        res.json({ message: "Worker and related data deleted successfully" });
+
     } catch (error) {
-        console.log(error)
-
+        console.error(error);
+        await transaction.rollback();
         res.status(500).json({ error: "Error deleting worker" });
     }
 };
+
 
 
 
