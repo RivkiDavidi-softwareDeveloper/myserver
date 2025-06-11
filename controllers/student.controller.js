@@ -1,6 +1,6 @@
 // controllers/student.controller.js
 const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,
-    StudentForActivity, City, Worker, Synagogue,Community, CommonStudentForWorker } = require('../models');
+    StudentForActivity, City, Worker, Synagogue, Community, CommonStudentForWorker } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
@@ -250,6 +250,28 @@ exports.updateStudent = async (req, res) => {
 
     } catch (error) {
         await t.rollback();
+        console.error(error);
+        res.status(500).json({ error: "שגיאה בעדכון תלמיד" });
+    }
+};
+
+//עדכון פרטי תלמיד בהוספת תלמיד לפרויקט בלבד ללא כל הטבלאות המקושרות
+exports.updateStudent2 = async (req, res) => {
+    try {
+        const { St_code } = req.params;
+        const { St_name_school_bein_hazmanim, St_nusah_tfila, St_veshinantem } = req.body;
+        // עדכון תלמיד
+        const student=await Student.update({
+            St_name_school_bein_hazmanim: St_name_school_bein_hazmanim,
+            St_nusah_tfila: St_nusah_tfila,
+            St_veshinantem: St_veshinantem
+        }, {
+            where: { St_code: St_code }        });
+
+      //  res.json(student);
+        res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
+
+    } catch (error) {
         console.error(error);
         res.status(500).json({ error: "שגיאה בעדכון תלמיד" });
     }
