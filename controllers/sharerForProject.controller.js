@@ -389,3 +389,15 @@ exports.importFromExcel = async (req, res) => {
         res.status(500).json({ message: "שגיאה בייבוא" });
     }
 };
+// מחיקה
+exports.deleteSharerForProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const row = await SharerForProject.findByPk(id);
+        if (!row) return res.status(404).json({ error: "המשתתף לא נמצא" });
+        await row.destroy();
+        res.json({ message: "נמחק בהצלחה" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

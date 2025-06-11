@@ -64,8 +64,7 @@ exports.deleteStudentForProject = async (req, res) => {
     try {
         const { id } = req.params;
         const row = await StudentForProject.findByPk(id);
-        if (!row) return res.status(404).json({ error: "לא נמצא" });
-
+        if (!row) return res.status(404).json({ error: "החניך לא נמצא" });
         await row.destroy();
         res.json({ message: "נמחק בהצלחה" });
     } catch (error) {

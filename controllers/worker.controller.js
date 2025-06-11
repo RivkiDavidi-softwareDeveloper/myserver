@@ -1,11 +1,11 @@
-const { Worker, TypeGender, TypeWorker, SystemLogin , Task, Student, FileForWorker, CommonStudentForWorker, RecipientForMessage, Activity } = require('../models');
+const { Worker,MessageForCall, TypeGender, TypeWorker, SystemLogin, Task, Student, FileForWorker, CommonStudentForWorker, RecipientForMessage, Activity } = require('../models');
 
 const { Op, Sequelize } = require('sequelize');
 
 // שליפת כל העובדים 
 exports.getAllWorkers = async (req, res) => {
     try {
-        const {value, genderO, genderF, typeWO, typeWF } = req.query;
+        const { value, genderO, genderF, typeWO, typeWF } = req.query;
 
         const genderOrder = Number(genderO);
         const genderFilter = Number(genderF);
@@ -28,10 +28,10 @@ exports.getAllWorkers = async (req, res) => {
 
         // סינון לפי טקסט
         if (searchValue) {
-            listWorkers = listWorkers.filter(w => 
+            listWorkers = listWorkers.filter(w =>
                 w.Wo_name.toLowerCase().includes(searchValue) ||
                 w.Wo_Fname.toLowerCase().includes(searchValue) ||
-                (w.Wo_name+" "+w.Wo_Fname).toLowerCase().includes(searchValue) 
+                (w.Wo_name + " " + w.Wo_Fname).toLowerCase().includes(searchValue)
 
             );
         }
@@ -51,7 +51,7 @@ exports.getAllWorkers = async (req, res) => {
             return result;
         });
 
-      //  console.log("Total workers after filtering:", listWorkers.length);
+        //  console.log("Total workers after filtering:", listWorkers.length);
 
 
         res.json(listWorkers);
@@ -63,7 +63,7 @@ exports.getAllWorkers = async (req, res) => {
 // שליפת עובד לפי קוד 
 exports.getWorkerOfCode = async (req, res) => {
     try {
-        const {codeWoreker } = req.query;
+        const { codeWoreker } = req.query;
         const code = Number(codeWoreker);
         if (isNaN(code)) {
             return res.status(400).json({ error: "Invalid code" });
@@ -132,13 +132,33 @@ exports.deleteWorker = async (req, res) => {
             await transaction.rollback();
             return res.status(404).json({ error: "Worker not found" });
         }
+        // מחיקת פעילויות שהעובד ביצע
+        let activity = await Activity.findOne({ where: { AFS_worker_code: Wo_code }, transaction });
+        let message = await MessageForCall.findOne({ where: { MFC_sender_worker_code: Wo_code }, transaction });
 
-        // מחיקת משימות של העובד
+        let student = await Student.findOne({ where: { St_worker_code: Wo_code }, transaction });
+        if (activity || student|| message) {
+       return res.json({ message: "לעובד זה משויכים חניכים/פעילויות/שיחות , לא ניתן למוחקו" });
+
+        }
+        else{
+  // מחיקת משימות של העובד
         await Task.destroy({ where: { Ta_worker_code: Wo_code }, transaction });
 
-        // עדכון סטודנטים שהעובד היה מקושר אליהם (מניעת שגיאת FK)
-        await Student.update({ St_worker_code: null }, { where: { St_worker_code: Wo_code }, transaction });
-
+        /*  // עדכון סטודנטים שהעובד היה מקושר אליהם (מניעת שגיאת FK)
+         let St_worker_code = null
+         let workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+         if (workerRecord) {
+             St_worker_code = workerRecord.Wo_code;
+         }
+         else {
+              workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: transaction });
+             if (workerRecord) {
+                 St_worker_code = workerRecord.Wo_code;
+             }
+         }
+         await Student.update({ St_worker_code: St_worker_code }, { where: { St_worker_code: Wo_code }, transaction });
+  */
         // מחיקת קבצים של העובד
         await FileForWorker.destroy({ where: { FFW_worker_code: Wo_code }, transaction });
 
@@ -148,19 +168,20 @@ exports.deleteWorker = async (req, res) => {
         // מחיקת מקבל הודעה שהוא העובד
         await RecipientForMessage.destroy({ where: { RFM_worker_code: Wo_code }, transaction });
 
-        // מחיקת פעילויות שהעובד ביצע
-        await Activity.destroy({ where: { AFS_worker_code: Wo_code }, transaction });
-
         // מחיקת העובד עצמו
         await worker.destroy({ transaction });
 
         await transaction.commit();
-        res.json({ message: "Worker and related data deleted successfully" });
+        res.json({ message: "העובד נמחק בהצלחה" });
 
+        }
+      
     } catch (error) {
         console.error(error);
         await transaction.rollback();
-        res.status(500).json({ error: "Error deleting worker" });
+     //   res.status(500).json({ error: "Error deleting worker" });
+                res.status(500).json({ error: "אירעה שגיאה במחיקת עובד" });
+
     }
 };
 

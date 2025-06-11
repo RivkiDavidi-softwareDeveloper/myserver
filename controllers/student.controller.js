@@ -1,6 +1,6 @@
 // controllers/student.controller.js
 const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,
-    StudentForActivity, City, Worker, Synagogue, CommonStudentForWorker } = require('../models');
+    StudentForActivity, City, Worker, Synagogue,Community, CommonStudentForWorker } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
@@ -72,12 +72,75 @@ exports.addStudent = async (req, res) => {
         const studiesData = clean(studiesDataRaw, ['SFS_code']);
 
         const cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
+        //בדיקה אם קיים הורה אב
+        let father = await Parent.findOne({ where: { Pa_ID: parentFData.Pa_ID } }, { transaction: t });
+        if (!father) {
+            // יצירת הורה אב
+            father = await Parent.create(parentFData, { transaction: t });
 
-        // יצירת הורה אב
-        const father = await Parent.create(parentFData, { transaction: t });
+        }
+        //בדיקה אם קיים הורה אם
+        let mother = await Parent.findOne({ where: { Pa_ID: parentMData.Pa_ID } }, { transaction: t });
+        if (!mother) {
+            // יצירת הורה אם
+            mother = await Parent.create(parentMData, { transaction: t });
+        }
 
-        // יצירת הורה אם
-        const mother = await Parent.create(parentMData, { transaction: t });
+        //בדיקה לאיזה עוובד משויך
+        if (studentData.St_worker_code == -1) {
+            const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+            if (workerRecord) {
+                studentData.St_worker_code = workerRecord.Wo_code;
+            }
+            else {
+                const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
+                if (workerRecord) {
+                    studentData.St_worker_code = workerRecord.Wo_code;
+                }
+            }
+        }
+        //בדיקה לאיזה בית כנסת משויך
+        if (studentData.St_worker_code == -1) {
+            const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+            if (workerRecord) {
+                studentData.St_worker_code = workerRecord.Wo_code;
+            }
+            else {
+                const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
+                if (workerRecord) {
+                    studentData.St_worker_code = workerRecord.Wo_code;
+                }
+            }
+        }
+        if (studentData.St_code_synagogue == -1) {
+
+
+            //קוד בית כנסת
+            let SynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
+            if (SynagogueRecord) {
+
+                studentData.St_code_synagogue = SynagogueRecord.Sy_code;
+            }
+            else {
+                //קוד קהילה
+                let CommunityCode = -1
+                let CommunityRecord = await Community.findOne({ where: { Com_name: "לא ידוע" } });
+                if (CommunityRecord) {
+
+                    CommunityCode = CommunityRecord.Com_code;
+                }
+                else {
+                    CommunityRecord = await Community.create({ Com_name: "לא ידוע" }, { transaction: t });
+                    if (CommunityRecord) {
+                        CommunityCode = CommunityRecord.Com_code;
+                    }
+                }
+                SynagogueRecord = await Synagogue.create({ Sy_name: "לא ידוע", Sy_code_Community: CommunityCode }, { transaction: t });
+                if (SynagogueRecord) {
+                    studentData.St_code_synagogue = SynagogueRecord.Sy_code;
+                }
+            }
+        }
 
         // יצירת תלמיד עם קודי ההורים
         const student = await Student.create({
@@ -441,7 +504,7 @@ exports.importFromExcel = async (req, res) => {
                         St_worker_code = workerRecord.Wo_code;
                     }
                     else {
-                        const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע" ,Wo_ID:"000000000" ,Wo_type_worker:1,Wo_gender:1,Wo_password:"0000"}, { transaction: t });
+                        const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
                         if (workerRecord) {
                             St_worker_code = workerRecord.Wo_code;
                         }
@@ -449,17 +512,17 @@ exports.importFromExcel = async (req, res) => {
                 }
             }
             else {
-                const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע"} });
+                const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
                 if (workerRecord) {
-                  
+
                     St_worker_code = workerRecord.Wo_code;
                 }
                 else {
-                        const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע" ,Wo_ID:"000000000" }, { transaction: t });
-                        if (workerRecord) {
-                            St_worker_code = workerRecord.Wo_code;
-                        }
+                    const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000" }, { transaction: t });
+                    if (workerRecord) {
+                        St_worker_code = workerRecord.Wo_code;
                     }
+                }
             }
             const risk = row["מצב סיכון"];
             let St_risk_code = 1;
@@ -477,10 +540,33 @@ exports.importFromExcel = async (req, res) => {
             const St_contact_phone = row["פל' איש צוות מקושר"];
             const St_requester = row['הפניה התקבלה ע"י'];
             const St_socioeconomic_status = row["מצב סוציואקנומי (1-10)"];
-            let St_code_synagogue = 1;
-            const SynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
+            let St_code_synagogue = -1;
+
+
+            //קוד בית כנסת
+            let SynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
             if (SynagogueRecord) {
+
                 St_code_synagogue = SynagogueRecord.Sy_code;
+            }
+            else {
+                //קוד קהילה
+                let CommunityCode = -1
+                let CommunityRecord = await Community.findOne({ where: { Com_name: "לא ידוע" } });
+                if (CommunityRecord) {
+
+                    CommunityCode = CommunityRecord.Com_code;
+                }
+                else {
+                    CommunityRecord = await Community.create({ Com_name: "לא ידוע" }, { transaction: t });
+                    if (CommunityRecord) {
+                        CommunityCode = CommunityRecord.Com_code;
+                    }
+                }
+                SynagogueRecord = await Synagogue.create({ Sy_name: "לא ידוע", Sy_code_Community: CommunityCode }, { transaction: t });
+                if (SynagogueRecord) {
+                    St_code_synagogue = SynagogueRecord.Sy_code;
+                }
             }
             const frequency = row["סוג"];
             let St_code_frequency = 1;
