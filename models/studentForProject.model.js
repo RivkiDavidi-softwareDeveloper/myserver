@@ -31,7 +31,16 @@ const StudentForProject = sequelize.define("StudentForProject", {
             model: "GuideForProject", // שם הטבלה GuideForProject
             key: "GFP_code"
         }
-    }
+    },
+    SFP_name_school_bein_hazmanim: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    },
+
+    SFP_veshinantem: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    },
 }, {
     tableName: "studentForProject",
     timestamps: false

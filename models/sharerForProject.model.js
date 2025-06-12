@@ -31,7 +31,15 @@ const SharerForProject = sequelize.define("SharerForProject", {
             model: "GuideForProject", // שם הטבלה GuideForProject
             key: "GFP_code"
         }
-    }
+    },
+    SFP_name_school_bein_hazmanim: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    },
+    SFP_veshinantem: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    },
 }, {
     tableName: "sharerForProject",
     timestamps: false

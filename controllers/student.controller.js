@@ -259,12 +259,10 @@ exports.updateStudent = async (req, res) => {
 exports.updateStudent2 = async (req, res) => {
     try {
         const { St_code } = req.params;
-        const { St_name_school_bein_hazmanim, St_nusah_tfila, St_veshinantem } = req.body;
+        const { St_nusah_tfila } = req.body;
         // עדכון תלמיד
         const student=await Student.update({
-            St_name_school_bein_hazmanim: St_name_school_bein_hazmanim,
             St_nusah_tfila: St_nusah_tfila,
-            St_veshinantem: St_veshinantem
         }, {
             where: { St_code: St_code }        });
 

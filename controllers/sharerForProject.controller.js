@@ -49,12 +49,12 @@ exports.importFromExcel = async (req, res) => {
         if (!fs.existsSync(imageDir)) {
             fs.mkdirSync(imageDir, { recursive: true });
         }
-  /*קבייעת שם תמונה עם תאריך ושעה  
-       const now = new Date();
-        const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-        const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
-        const timestamp = `${formattedDate}_${formattedTime}`;
- */
+        /*קבייעת שם תמונה עם תאריך ושעה  
+             const now = new Date();
+              const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+              const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
+              const timestamp = `${formattedDate}_${formattedTime}`;
+       */
         const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
         fs.writeFileSync(filePath, req.file.buffer);
 
@@ -144,9 +144,7 @@ exports.importFromExcel = async (req, res) => {
                 const Sh_address = row["רחוב"] + " " + row["מספר"];
                 const Sh_cell_phone = row["פל' בחור"];
                 const Sh_phone = row["טלפון בית"];
-                const Sh_name_school_bein_hazmanim = row["שם ישיבת בין הזמנים"];
                 const Sh_nusah_tfila = row["נוסח תפילה"];
-                const Sh_veshinantem = row['"ושננתם"'];
 
                 const Sh_father_code = father.Pa_code;
                 const Sh_mother_code = mother.Pa_code;
@@ -172,8 +170,8 @@ exports.importFromExcel = async (req, res) => {
                     Sh_ID: Sh_ID, Sh_gender: Sh_gender, Sh_name: Sh_name, Sh_Fname: Sh_Fname,
                     Sh_birthday: Sh_birthday, Sh_father_code: Sh_father_code,
                     Sh_mother_code: Sh_mother_code, Sh_city_code: Sh_city_code, Sh_address: Sh_address, Sh_cell_phone: Sh_cell_phone,
-                    Sh_phone: Sh_phone, Sh_name_school_bein_hazmanim: Sh_name_school_bein_hazmanim,
-                    Sh_nusah_tfila: Sh_nusah_tfila ,Sh_veshinantem:Sh_veshinantem
+                    Sh_phone: Sh_phone,
+                    Sh_nusah_tfila: Sh_nusah_tfila
 
                 }, { transaction: t });
 
@@ -296,7 +294,7 @@ exports.importFromExcel = async (req, res) => {
                     Sh_birthday: Sh_birthday, Sh_father_code: Sh_father_code,
                     Sh_mother_code: Sh_mother_code, Sh_city_code: Sh_city_code, Sh_address: Sh_address, Sh_cell_phone: Sh_cell_phone,
                     Sh_phone: Sh_phone, Sh_name_school_bein_hazmanim: Sh_name_school_bein_hazmanim,
-                    Sh_nusah_tfila: Sh_nusah_tfila,Sh_veshinantem:Sh_veshinantem
+                    Sh_nusah_tfila: Sh_nusah_tfila, Sh_veshinantem: Sh_veshinantem
                 }, {
                     where: { Sh_code: sharerExists.Sh_code },
                     transaction: t
@@ -323,6 +321,9 @@ exports.importFromExcel = async (req, res) => {
                 });
 
             }
+            const SFP_name_school_bein_hazmanim = row["שם ישיבת בין הזמנים"];
+            const SFP_veshinantem = row['"ושננתם"'];
+
             const nameGuide = row["שם המדריך"];
             let SFP_code_guide = 1;
             if (nameGuide) {
@@ -360,13 +361,18 @@ exports.importFromExcel = async (req, res) => {
                 await SharerForProject.create({
                     SFP_code_project: codeProject,
                     SFP_code_Sharer: sharerCode,
-                    SFP_code_guide: SFP_code_guide
+                    SFP_code_guide: SFP_code_guide,
+                    SFP_name_school_bein_hazmanim: SFP_name_school_bein_hazmanim,
+                    SFP_veshinantem: SFP_veshinantem
                 }, { transaction: t });
             }
             else {
                 // עדכון משתתף לפרויקט
                 await SharerForProject.update({
-                    SFP_code_guide: SFP_code_guide
+                    SFP_code_guide: SFP_code_guide,
+                    SFP_name_school_bein_hazmanim: SFP_name_school_bein_hazmanim,
+                    SFP_veshinantem: SFP_veshinantem
+
                 }, {
                     where: {
                         SFP_code_project: codeProject,
