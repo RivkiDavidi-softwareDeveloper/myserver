@@ -36,7 +36,35 @@ exports.getAllSharerForProjects = async (req, res) => {
         console.log(error)
     }
 };
+// שליפה של כל הפרויקטים לחניך
+exports.getAllProjectsForSharer = async (req, res) => {
+    try {
+        const { codeSharer } = req.query;
+        const SharerCode = Number(codeSharer);
+        if (SharerCode !== -1) {
 
+            let sharerForProject = await SharerForProject.findAll({
+                where: { SFP_code_Sharer: SharerCode },
+                include: [
+
+                    { model: Sharer },
+                    { model: GuideForProject }
+                ]
+            });
+            sharerForProject.sort((a, b) => {
+                return a.Sharer.Sh_name.localeCompare(b.Sharer.Sh_name);
+            });
+            res.json(sharerForProject);
+        }
+        else {
+            res.status(404).json({ error: "לא נמצא" });
+
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+        console.log(error)
+    }
+};
 //העלאת קובץ אקסל משתתפים
 exports.importFromExcel = async (req, res) => {
     try {
@@ -73,16 +101,18 @@ exports.importFromExcel = async (req, res) => {
             const sharerExists = await Sharer.findOne({ where: { Sh_ID: Sh_ID } });
             if (sharerExists == null) {
                 let Pa_name = row["שם האב"];
-                if (Pa_name == null) {
+                if (Pa_name == undefined) {
                     Pa_name = ""
                 }
                 let Pa_ID = row["ת.ז. האב"];
+
                 let Pa_work = ""
                 let Pa_cell_phone = row["פל' אב"];
+                let father = await Parent.findOne();
                 if (Pa_ID !== undefined) {
 
                     // יצירת/עדכון הורה אב
-                    const father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                    father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (father) {
                         father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                             where: { Pa_code: father.Pa_code },
@@ -98,16 +128,19 @@ exports.importFromExcel = async (req, res) => {
                 }
 
                 Pa_name = row["שם האם"];
-                if (Pa_name == null) {
+                if (Pa_name == undefined) {
                     Pa_name = ""
                 }
                 Pa_ID = row["ת.ז. האם"];
                 Pa_work = "";
                 Pa_cell_phone = row["פל' אם"];
+                let mother = await Parent.findOne();
+
+
                 if (Pa_ID !== undefined) {
 
-                    // יצירת/עדכון הורה אב
-                    const mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                    // יצירת/עדכון הורה אם
+                    mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (mother) {
                         mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                             where: { Pa_code: mother.Pa_code },
@@ -116,11 +149,15 @@ exports.importFromExcel = async (req, res) => {
                     }
                     else {
                         mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+
                     }
                 }
                 else {
                     mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                 }
+
+                const Sh_father_code = father.Pa_code;
+                const Sh_mother_code = mother.Pa_code;
                 //פריט משתתף
                 const Sh_name = row["שם פרטי"];
                 const Sh_Fname = row["שם משפחה"];
@@ -141,13 +178,15 @@ exports.importFromExcel = async (req, res) => {
                      console.error("פורמט לא מזוהה:", rawDate);
                  } */
                 const Sh_birthday = "2003-11-11"
-                const Sh_address = row["רחוב"] + " " + row["מספר"];
+                let street = row["רחוב"]
+                let number = row["מספר"];
+                if (!street) { street = "" }
+                if (!number) { number = "" }
+                const Sh_address = street + " " + number
                 const Sh_cell_phone = row["פל' בחור"];
                 const Sh_phone = row["טלפון בית"];
                 const Sh_nusah_tfila = row["נוסח תפילה"];
 
-                const Sh_father_code = father.Pa_code;
-                const Sh_mother_code = mother.Pa_code;
                 const nameCity = row["עיר"];
                 let Sh_city_code = 1;
                 if (nameCity) {
@@ -163,7 +202,6 @@ exports.importFromExcel = async (req, res) => {
                     }
                 }
                 if (!Sh_ID || !Sh_name || !Sh_Fname) continue;
-
 
                 // יצירת משתתף עם קודי ההורים
                 const sharer = await Sharer.create({
@@ -196,15 +234,17 @@ exports.importFromExcel = async (req, res) => {
             }
             else {
                 let Pa_name = row["שם האב"];
-                if (Pa_name == null) {
+                if (Pa_name == undefined) {
                     Pa_name = ""
                 }
                 let Pa_ID = row["ת.ז. האב"];
                 let Pa_work = ""
                 let Pa_cell_phone = row["פל' אב"];
+                let father = await Parent.findOne();
+
                 if (Pa_ID !== undefined) {
                     // יצירת/עדכון הורה אב
-                    const father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                    father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (father) {
                         father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                             where: { Pa_code: father.Pa_code },
@@ -220,16 +260,18 @@ exports.importFromExcel = async (req, res) => {
                 }
 
                 Pa_name = row["שם האם"];
-                if (Pa_name == null) {
+                if (Pa_name == undefined) {
                     Pa_name = ""
                 }
                 Pa_ID = row["ת.ז. האם"];
                 Pa_work = "";
                 Pa_cell_phone = row["פל' אם"];
+                let mother = await Parent.findOne();
+
                 if (Pa_ID !== undefined) {
 
                     // יצירת/עדכון הורה אם
-                    const mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                    mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (mother) {
                         mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                             where: { Pa_code: mother.Pa_code },
@@ -266,9 +308,8 @@ exports.importFromExcel = async (req, res) => {
                 const Sh_address = row["רחוב"] + " " + row["מספר"];
                 const Sh_cell_phone = row["פל' בחור"];
                 const Sh_phone = row["טלפון בית"];
-                const Sh_name_school_bein_hazmanim = row["שם ישיבת בין הזמנים"];
+
                 const Sh_nusah_tfila = row["נוסח תפילה"];
-                const Sh_veshinantem = row['"ושננתם"'];
 
                 const Sh_father_code = father.Pa_code;
                 const Sh_mother_code = mother.Pa_code;
@@ -293,8 +334,8 @@ exports.importFromExcel = async (req, res) => {
                     Sh_ID: Sh_ID, Sh_gender: Sh_gender, Sh_name: Sh_name, Sh_Fname: Sh_Fname,
                     Sh_birthday: Sh_birthday, Sh_father_code: Sh_father_code,
                     Sh_mother_code: Sh_mother_code, Sh_city_code: Sh_city_code, Sh_address: Sh_address, Sh_cell_phone: Sh_cell_phone,
-                    Sh_phone: Sh_phone, Sh_name_school_bein_hazmanim: Sh_name_school_bein_hazmanim,
-                    Sh_nusah_tfila: Sh_nusah_tfila, Sh_veshinantem: Sh_veshinantem
+                    Sh_phone: Sh_phone,
+                    Sh_nusah_tfila: Sh_nusah_tfila
                 }, {
                     where: { Sh_code: sharerExists.Sh_code },
                     transaction: t
@@ -321,7 +362,7 @@ exports.importFromExcel = async (req, res) => {
                 });
 
             }
-            const SFP_name_school_bein_hazmanim = row["שם ישיבת בין הזמנים"];
+            const SFP_name_school_bein_hazmanim = row["שם ישיבת בן הזמנים"]
             const SFP_veshinantem = row['"ושננתם"'];
 
             const nameGuide = row["שם המדריך"];

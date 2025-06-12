@@ -1,5 +1,4 @@
 const { StudiesForSharer } = require("../models");
-
 // שליפת כל הרשומות
 exports.getAllStudies = async (req, res) => {
     try {
@@ -26,6 +25,7 @@ exports.getStudiesOfCodeSharer = async (req, res) => {
         res.status(500).json({ error: "Error fetching studies for student" });
     }
 };
+
 // הוספת רשומה חדשה
 exports.addStudy = async (req, res) => {
     try {

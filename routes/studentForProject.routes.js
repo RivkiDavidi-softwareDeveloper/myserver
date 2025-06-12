@@ -3,6 +3,8 @@ const router = express.Router();
 const controller = require("../controllers/studentForProject.controller");
 
 router.get("/", controller.getAllStudentForProjects);
+router.get("/forStudent", controller.getAllProjectsForStudent);
+
 /* router.get("/ofProject", synagogueController.getStudentForProjectByCodeProject);
  */router.post("/", controller.createStudentForProject);
 router.put("/:id", controller.updateStudentForProject);

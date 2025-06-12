@@ -30,9 +30,35 @@ exports.getAllStudentForProjects = async (req, res) => {
         console.log(error)
     }
 };
+// שליפה של כל הפרויקטים לחניך
+exports.getAllProjectsForStudent = async (req, res) => {
+    try {
+        const { codeStudent } = req.query;
+        const studentCode = Number(codeStudent);
+        if (studentCode !== -1) {
 
+            let studentsForProject = await StudentForProject.findAll({
+                where: { SFP_code_student: studentCode },
+                include: [
 
+                    { model: Student },
+                    { model: GuideForProject }
+                ]
+            });
+            studentsForProject.sort((a, b) => {
+                return a.Student.St_name.localeCompare(b.Student.St_name);
+            });
+            res.json(studentsForProject);
+        }
+        else {
+            res.status(404).json({ error: "לא נמצא" });
 
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+        console.log(error)
+    }
+};
 // יצירה חדשה
 exports.createStudentForProject = async (req, res) => {
     try {

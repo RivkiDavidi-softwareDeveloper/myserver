@@ -23,13 +23,13 @@ exports.getAllGuidesForProjectWithSudentsAndSharers = async (req, res) => {
             include: [{
                 model: Student
             }],
-        order: [[Student, 'St_name', 'ASC'], [Student, 'St_Fname', 'ASC']]
+            order: [[Student, 'St_name', 'ASC'], [Student, 'St_Fname', 'ASC']]
         });
 
         const sharers = await SharerForProject.findAll({
             where: { SFP_code_project: projectCode },
             include: [{ model: Sharer }],
-        order: [[Sharer, 'Sh_name', 'ASC'], [Sharer, 'Sh_Fname', 'ASC']]
+            order: [[Sharer, 'Sh_name', 'ASC'], [Sharer, 'Sh_Fname', 'ASC']]
         });
 
         // מיפוי מדריכים עם רשימות תואמות של חניכים ומשתתפים
@@ -68,7 +68,11 @@ exports.getAllGuidesForProject = async (req, res) => {
             res.status(200).json(guidesForProject);
         }
         else {
-            res.status(404).json({ error: "לא נמצא" });
+            let guidesForProject = await GuideForProject.findAll();
+            guidesForProject.sort((a, b) => {
+                return a.GFP_name.localeCompare(b.GFP_name);
+            });
+            res.status(200).json(guidesForProject);
         }
     } catch (error) {
         res.status(500).json({ message: "שגיאה בשליפת מדריכים", error });
