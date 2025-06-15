@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const { sequelize } = require("./models");
 const studentRoutes = require("./routes/student.routes");
+const sharerRoutes = require("./routes/sharer.routes");
+
 const cityRoutes = require("./routes/city.routes");
 const typeActivityStateRoutes = require("./routes/typeActivityState.routes");
 const typeRiskRoutes = require("./routes/typeRisk.routes");
@@ -42,6 +44,8 @@ app.use(express.json());
 
 app.use("/api/activities", activityRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/shareres", sharerRoutes);
+
 app.use("/api/cities", cityRoutes);
 app.use("/api/categoriesForActivities", categoriesForActivityRoutes);
 app.use("/api/typeActivityStates", typeActivityStateRoutes);

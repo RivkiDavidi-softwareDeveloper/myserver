@@ -436,6 +436,17 @@ exports.importFromExcel = async (req, res) => {
         res.status(500).json({ message: "שגיאה בייבוא" });
     }
 };
+// יצירה חדשה
+exports.createSharerForProject = async (req, res) => {
+    try {
+        const { SFP_code, ...data } = req.body;
+        const newRow = await SharerForProject.create(data);
+        res.status(201).json(newRow);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+};
 // מחיקה
 exports.deleteSharerForProject = async (req, res) => {
     try {
@@ -446,5 +457,26 @@ exports.deleteSharerForProject = async (req, res) => {
         res.json({ message: "נמחק בהצלחה" });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+};
+// עדכון  
+exports.updateSharerForProject = async (req, res) => {
+    try {
+        const { SFP_code } = req.params;
+        const { SFP_code_project, SFP_code_Sharer, SFP_code_guide, SFP_name_school_bein_hazmanim, SFP_veshinantem } = req.body;
+
+        const sharerForProject = await SharerForProject.findByPk(SFP_code);
+        if (!sharerForProject) return res.status(404).json({ error: "project not found" });
+        sharerForProject.SFP_code_project = SFP_code_project;
+        sharerForProject.SFP_code_Sharer = SFP_code_Sharer;
+        sharerForProject.SFP_code_guide = SFP_code_guide;
+        sharerForProject.SFP_name_school_bein_hazmanim = SFP_name_school_bein_hazmanim;
+        sharerForProject.SFP_veshinantem = SFP_veshinantem;
+        await sharerForProject.save();
+        const updatedsharerForProject = await SharerForProject.findByPk(SFP_code);
+        res.json(updatedsharerForProject);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: "Error updating project" });
     }
 };
