@@ -17,8 +17,11 @@ exports.getAllProjects = async (req, res) => {
         }
 
         let projects = await Project.findAll({
-            where: whereClause
-        });
+            where: whereClause,
+            order: [['Pr_date', 'DESC']] // מיון יורד לפי תאריך
+
+        }
+        );
         // סינון לפי טקסט
         if (searchValue) {
             projects = projects.filter(p =>

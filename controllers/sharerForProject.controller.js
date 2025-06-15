@@ -36,7 +36,7 @@ exports.getAllSharerForProjects = async (req, res) => {
         console.log(error)
     }
 };
-// שליפה של כל הפרויקטים לחניך
+// שליפה של כל הפרויקטים למשתתף
 exports.getAllProjectsForSharer = async (req, res) => {
     try {
         const { codeSharer } = req.query;
@@ -48,11 +48,13 @@ exports.getAllProjectsForSharer = async (req, res) => {
                 include: [
 
                     { model: Sharer },
+                    { model: Project },
+
                     { model: GuideForProject }
                 ]
             });
             sharerForProject.sort((a, b) => {
-                return a.Sharer.Sh_name.localeCompare(b.Sharer.Sh_name);
+                return b.Project.Pr_date.localeCompare(a.Project.Pr_date);
             });
             res.json(sharerForProject);
         }

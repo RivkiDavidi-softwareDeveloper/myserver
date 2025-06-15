@@ -42,11 +42,12 @@ exports.getAllProjectsForStudent = async (req, res) => {
                 include: [
 
                     { model: Student },
+                     { model: Project },
                     { model: GuideForProject }
                 ]
             });
             studentsForProject.sort((a, b) => {
-                return a.Student.St_name.localeCompare(b.Student.St_name);
+                return b.Project.Pr_date.localeCompare(a.Project.Pr_date);
             });
             res.json(studentsForProject);
         }
@@ -74,8 +75,8 @@ exports.createStudentForProject = async (req, res) => {
 // עדכון
 exports.updateStudentForProject = async (req, res) => {
     try {
-        const { id } = req.params;
-        const row = await StudentForProject.findByPk(id);
+        const { SFP_code } = req.params;
+        const row = await StudentForProject.findByPk(SFP_code);
         if (!row) return res.status(404).json({ error: "לא נמצא" });
 
         await row.update(req.body);
@@ -84,27 +85,7 @@ exports.updateStudentForProject = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-/* // עדכון  
-exports.updateSharerForProject = async (req, res) => {
-    try {
-        const { SFP_code } = req.params;
-        const { SFP_code_project, SFP_code_Sharer, SFP_code_guide, SFP_name_school_bein_hazmanim, SFP_veshinantem } = req.body;
 
-        const sharerForProject = await SharerForProject.findByPk(SFP_code);
-        if (!sharerForProject) return res.status(404).json({ error: "project not found" });
-        sharerForProject.SFP_code_project = SFP_code_project;
-        sharerForProject.SFP_code_Sharer = SFP_code_Sharer;
-        sharerForProject.SFP_code_guide = SFP_code_guide;
-        sharerForProject.SFP_name_school_bein_hazmanim = SFP_name_school_bein_hazmanim;
-        sharerForProject.SFP_veshinantem = SFP_veshinantem;
-        await sharerForProject.save();
-        const updatedsharerForProject = await SharerForProject.findByPk(SFP_code);
-        res.json(updatedsharerForProject);
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ error: "Error updating project" });
-    }
-}; */
 
 // מחיקה
 exports.deleteStudentForProject = async (req, res) => {

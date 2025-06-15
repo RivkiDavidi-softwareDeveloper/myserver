@@ -8,7 +8,7 @@ router.get("/forStudent", controller.getAllProjectsForStudent);
 /* router.get("/ofProject", controller.getStudentForProjectByCodeProject);
  */
 router.post("/", controller.createStudentForProject);
-router.put("/:id", controller.updateStudentForProject);
+router.put("/:SFP_code", controller.updateStudentForProject);
 router.delete("/:id", controller.deleteStudentForProject);
 
 module.exports = router;
