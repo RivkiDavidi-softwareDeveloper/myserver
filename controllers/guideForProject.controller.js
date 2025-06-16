@@ -108,11 +108,11 @@ exports.updateGuideForProject = async (req, res) => {
 exports.deleteGuideForProject = async (req, res) => {
     try {
         const guide = await GuideForProject.findByPk(req.params.id);
-        if (!guide) return res.status(404).json({ message: "לא נמצא מדריך למחיקה" });
+        if (!guide) return res.status(404).json({ error: "לא נמצא מדריך למחיקה" });
 
         await guide.destroy();
-        res.status(204).send();
+        res.status(204).json({ message: "נמחק בהצלחה",  });
     } catch (error) {
-        res.status(500).json({ message: "שגיאה במחיקת מדריך", error });
+        res.status(500).json({ error: "שגיאה במחיקת מדריך",  });
     }
 };

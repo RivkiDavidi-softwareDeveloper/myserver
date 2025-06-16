@@ -116,18 +116,33 @@ exports.importFromExcel = async (req, res) => {
                     // יצירת/עדכון הורה אב
                     father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (father) {
-                        father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
-                            where: { Pa_code: father.Pa_code },
-                            transaction: t
-                        });
+                        await Parent.update(
+                            {
+                                Pa_ID, Pa_name, Pa_cell_phone, Pa_work
+                            },
+                            {
+                                where: { Pa_code: father.Pa_code },
+                                transaction: t
+                            }
+                        );
+                        father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+
+                        console.log(father.Pa_ID + " " + father.Pa_code + "הורה קיים")
+
                     }
                     else {
                         father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+                        console.log(father.Pa_ID + " " + father.Pa_code + " הורה לא קיים")
+
                     }
                 }
                 else {
+                    Pa_ID = "";
                     father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
+                    console.log(father.Pa_ID + " " + father.Pa_code + "אין ת.ז")
+
                 }
+                console.log(father.Pa_ID + " " + father.Pa_code + "בסוף")
 
                 Pa_name = row["שם האם"];
                 if (Pa_name == undefined) {
@@ -144,10 +159,12 @@ exports.importFromExcel = async (req, res) => {
                     // יצירת/עדכון הורה אם
                     mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (mother) {
-                        mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
+                        await Parent.update({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, {
                             where: { Pa_code: mother.Pa_code },
                             transaction: t
                         });
+                        mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+
                     }
                     else {
                         mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
@@ -155,6 +172,7 @@ exports.importFromExcel = async (req, res) => {
                     }
                 }
                 else {
+                    Pa_ID = ""
                     mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                 }
 
@@ -163,23 +181,41 @@ exports.importFromExcel = async (req, res) => {
                 //פריט משתתף
                 const Sh_name = row["שם פרטי"];
                 const Sh_Fname = row["שם משפחה"];
-                const gender = row["מגדר"];
                 let Sh_gender = 1
-                if (gender == "בת") { Sh_gender = 2 }
-                /*  const rawDate = row["ת.לידה לועזי"];
-                 let Sh_birthday = "";
-                 let jsDate;
-                 if (typeof rawDate === 'number') {
-                     jsDate = XLSX.SSF.parse_date_code(rawDate);
-                     const year = jsDate.y;
-                     const month = String(jsDate.m).padStart(2, '0');
-                     const day = String(jsDate.d).padStart(2, '0');
-                     Sh_birthday = `${year}-${month}-${day}`;
-                 }
-                 else {
-                     console.error("פורמט לא מזוהה:", rawDate);
-                 } */
-                const Sh_birthday = "2003-11-11"
+                const rawDate = row["ת.לידה לועזי"];
+                let Sh_birthday = "";
+                if (typeof rawDate === 'number') {
+                    // תאריך בפורמט Excel מספרי
+                    const jsDate = XLSX.SSF.parse_date_code(rawDate);
+                    const year = jsDate.y;
+                    const month = String(jsDate.m).padStart(2, '0');
+                    const day = String(jsDate.d).padStart(2, '0');
+                    Sh_birthday = `${year}-${month}-${day}`;
+                } else if (typeof rawDate === 'string') {
+                    let day, month, year;
+
+                    // רגקס גמיש שתומך גם ב-dd/mm/yyyy וגם ב-d/m/yyyy וכו'
+                    const regexDMY = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/;
+                    const regexYMD = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+
+                    if (regexDMY.test(rawDate)) {
+                        const match = rawDate.match(regexDMY);
+                        day = String(match[1]).padStart(2, '0');
+                        month = String(match[2]).padStart(2, '0');
+                        year = match[3];
+                        Sh_birthday = `${year}-${month}-${day}`;
+                    } else if (regexYMD.test(rawDate)) {
+                        const match = rawDate.match(regexYMD);
+                        year = match[1];
+                        month = String(match[2]).padStart(2, '0');
+                        day = String(match[3]).padStart(2, '0');
+                        Sh_birthday = `${year}-${month}-${day}`;
+                    } else {
+                        console.error("פורמט תאריך לא נתמך:", rawDate);
+                    }
+                } else {
+                    console.error("פורמט לא מזוהה:", rawDate);
+                }
                 let street = row["רחוב"]
                 let number = row["מספר"];
                 if (!street) { street = "" }
@@ -197,7 +233,26 @@ exports.importFromExcel = async (req, res) => {
                         Sh_city_code = cityRecord.Ci_code;
                     }
                     else {
-                        const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                        cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                        if (cityRecord) {
+                            Sh_city_code = cityRecord.Ci_code;
+                        }
+                        else {
+                            cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
+                            if (cityRecord) {
+                                Sh_city_code = cityRecord.Ci_code;
+                            }
+                        }
+                    }
+                }
+
+                else {
+                    const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                    if (cityRecord) {
+                        Sh_city_code = cityRecord.Ci_code;
+                    }
+                    else {
+                        cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
                         if (cityRecord) {
                             Sh_city_code = cityRecord.Ci_code;
                         }
@@ -248,16 +303,19 @@ exports.importFromExcel = async (req, res) => {
                     // יצירת/עדכון הורה אב
                     father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (father) {
-                        father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
+                        await Parent.update({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, {
                             where: { Pa_code: father.Pa_code },
                             transaction: t
                         });
+                        father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+
                     }
                     else {
                         father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                     }
                 }
                 else {
+                    Pa_ID = ""
                     father = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                 }
 
@@ -275,38 +333,65 @@ exports.importFromExcel = async (req, res) => {
                     // יצירת/עדכון הורה אם
                     mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                     if (mother) {
-                        mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
+                        mother = await Parent.update({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, {
                             where: { Pa_code: mother.Pa_code },
                             transaction: t
                         });
+                        mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+
                     }
                     else {
                         mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                     }
                 }
                 else {
+                    Pa_ID=""
                     mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                 }
                 //פריט משתתף
                 const Sh_name = row["שם פרטי"];
                 const Sh_Fname = row["שם משפחה"];
-                const gender = row["מגדר"];
                 let Sh_gender = 1
-                if (gender == "בת") { Sh_gender = 2 }
-                /*  const rawDate = row["ת.לידה לועזי"];
-                 let Sh_birthday = "";
-                 let jsDate;
-                 if (typeof rawDate === 'number') {
-                     jsDate = XLSX.SSF.parse_date_code(rawDate);
-                     const year = jsDate.y;
-                     const month = String(jsDate.m).padStart(2, '0');
-                     const day = String(jsDate.d).padStart(2, '0');
-                     Sh_birthday = `${year}-${month}-${day}`;
-                 }
-                 else {
-                     console.error("פורמט לא מזוהה:", rawDate);
-                 } */
-                const Sh_birthday = "2003-11-11"
+                const rawDate = row["ת.לידה לועזי"];
+                let Sh_birthday = "";
+
+                if (typeof rawDate === 'number') {
+                    // תאריך בפורמט Excel מספרי
+                    const jsDate = XLSX.SSF.parse_date_code(rawDate);
+                    const year = jsDate.y;
+                    const month = String(jsDate.m).padStart(2, '0');
+                    const day = String(jsDate.d).padStart(2, '0');
+                    Sh_birthday = `${year}-${month}-${day}`;
+
+                } else if (typeof rawDate === 'string') {
+                    let day, month, year;
+
+                    // רגקס גמיש שתומך גם ב-dd/mm/yyyy וגם ב-d/m/yyyy וכו'
+                    const regexDMY = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/;
+                    const regexYMD = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+
+                    if (regexDMY.test(rawDate)) {
+                        const match = rawDate.match(regexDMY);
+                        day = String(match[1]).padStart(2, '0');
+                        month = String(match[2]).padStart(2, '0');
+                        year = match[3];
+                        Sh_birthday = `${year}-${month}-${day}`;
+
+                    } else if (regexYMD.test(rawDate)) {
+                        const match = rawDate.match(regexYMD);
+                        year = match[1];
+                        month = String(match[2]).padStart(2, '0');
+                        day = String(match[3]).padStart(2, '0');
+                        Sh_birthday = `${year}-${month}-${day}`;
+
+                    } else {
+                        console.error("פורמט תאריך לא נתמך:", rawDate);
+                    }
+                } else {
+                    console.error("פורמט לא מזוהה:", rawDate);
+                }
+                console.error("תאריך", Sh_birthday);
+
                 const Sh_address = row["רחוב"] + " " + row["מספר"];
                 const Sh_cell_phone = row["פל' בחור"];
                 const Sh_phone = row["טלפון בית"];
@@ -327,8 +412,27 @@ exports.importFromExcel = async (req, res) => {
                         if (cityRecord) {
                             Sh_city_code = cityRecord.Ci_code;
                         }
+                        else {
+                            cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
+                            if (cityRecord) {
+                                Sh_city_code = cityRecord.Ci_code;
+                            }
+                        }
                     }
                 }
+                else {
+                    const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                    if (cityRecord) {
+                        Sh_city_code = cityRecord.Ci_code;
+                    }
+                    else {
+                        cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
+                        if (cityRecord) {
+                            Sh_city_code = cityRecord.Ci_code;
+                        }
+                    }
+                }
+
                 if (!Sh_ID || !Sh_name || !Sh_Fname) continue;
 
                 // עדכון משתתף

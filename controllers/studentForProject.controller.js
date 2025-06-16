@@ -1,5 +1,6 @@
 const { literal } = require("sequelize");
 const { StudentForProject, Project, Student, GuideForProject } = require("../models");
+const { Op, Sequelize, DATE } = require('sequelize');
 
 // שליפה של כל השורות
 exports.getAllStudentForProjects = async (req, res) => {
@@ -42,7 +43,7 @@ exports.getAllProjectsForStudent = async (req, res) => {
                 include: [
 
                     { model: Student },
-                     { model: Project },
+                    { model: Project },
                     { model: GuideForProject }
                 ]
             });
@@ -72,6 +73,54 @@ exports.createStudentForProject = async (req, res) => {
     }
 };
 
+// הוספת חניכים לפרויקט לפי קוד פעיל
+exports.createStudentsForProjectForWorker = async (req, res) => {
+    //  const transaction = await Sequelize.transaction();
+    const t = await Student.sequelize.transaction();
+
+    try {
+        const { codeWorker, codeProject } = req.params;
+        let codeWorker1 = Number(codeWorker)
+        let codeProject1 = Number(codeProject)
+
+        let codeGuide = 1
+        let guideRecord = await GuideForProject.findOne({ where: { GFP_code_project: codeProject1, GFP_name: "לא משויך למדריך" } });
+        if (guideRecord) {
+            codeGuide = guideRecord.GFP_code;
+        }
+        else {
+            const guide = await GuideForProject.create({
+                GFP_code_project: codeProject1, GFP_name: "לא משויך למדריך"
+            }, { transaction: t });
+            codeGuide = guide.GFP_code;
+        }
+        const listStudent = await Student.findAll({ where: { St_worker_code: codeWorker1 } });
+
+        for (const student of listStudent) {
+            let studentForProject = await StudentForProject.findOne(
+                { where: { SFP_code_project: codeProject, SFP_code_student: student.St_code } }, { transaction: t });
+            if (!studentForProject) {
+                await StudentForProject.create({
+                    SFP_code_project: codeProject,
+                    SFP_code_student: student.St_code,
+                    SFP_code_guide: codeGuide,
+                    SFP_name_school_bein_hazmanim: "",
+                    SFP_veshinantem: ""
+                }, { transaction: t });
+            }
+
+        }
+
+        await t.commit();
+
+        res.status(201).json({ message: "שויכו בהצלחה" });
+    } catch (error) {
+        await t.rollback();
+
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+};
 // עדכון
 exports.updateStudentForProject = async (req, res) => {
     try {
