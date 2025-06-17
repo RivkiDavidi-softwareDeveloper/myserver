@@ -242,7 +242,7 @@ exports.getWorkerByNameAndPassword = async (req, res) => {
                 const worker2 = new Worker();
                 worker2.Wo_name = systemLogin.SL_name;
                 worker2.Wo_password = systemLogin.SL_password;
-                worker2.Wo_ID = "111111111";
+                worker2.Wo_ID = "0000";
                 res.json(worker2);
             }
             else {
