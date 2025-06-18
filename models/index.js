@@ -2,8 +2,6 @@
 
 const sequelize = require("../config/database");
 const models = {
-    City: require("./city.model"),
-    Student: require("./student.model"),
     TypeActivityState: require("./typeActivityState.model"),
     TypeRisk: require("./typeRisk.model"),
     TypeDifficulty: require("./typeDifficulty.model"),
@@ -13,6 +11,7 @@ const models = {
     TypeOfActivity: require("./typeOfActivity.model"),
     SystemLogin: require("./systemLogin.model"),
     Parent: require("./parent.model"),
+    City: require("./city.model"),
     Worker: require("./worker.model"),
     Task: require("./task.model"),
     Call: require("./call.model"),
@@ -23,10 +22,11 @@ const models = {
     Community: require("./community.model"),
     Synagogue: require("./synagogue.model"),
     Frequency: require("./frequency.model"),
-    FileForStudent: require("./fileForStudent.model"),
-    StudiesForStudent: require("./studiesForStudent.model"),
-    DifficultyStudent: require("./difficultyStudent.model"),
+    Student: require("./student.model"),
     CommonStudentForWorker: require("./commonStudentForWorker.model"),
+    DifficultyStudent: require("./difficultyStudent.model"),
+    StudiesForStudent: require("./studiesForStudent.model"),
+    FileForStudent: require("./fileForStudent.model"),
     Activity: require("./activity.model"),
     CategoriesForActivity: require("./categoriesForActivity.model"),
     SubcategoryForTypeActivity: require("./subcategoryForTypeActivity.model"),
