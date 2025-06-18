@@ -49,7 +49,7 @@ const Sharer = sequelize.define("Sharer", {
         }
     },
     Sh_city_code: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         allowNull: true,
         references: {
             model: "city", // שם הטבלה City
