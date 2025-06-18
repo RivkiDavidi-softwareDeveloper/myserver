@@ -25,7 +25,7 @@ const DifficultyStudent = sequelize.define("DifficultyStudent", {
         }
     }
 }, {
-    tableName: "DifficultyStudent",
+    tableName: "difficultyStudent",
     timestamps: false
 });
 

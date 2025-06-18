@@ -37,7 +37,7 @@ const MessageForCall = sequelize.define("MessageForCall", {
         allowNull: true
     }
 }, {
-    tableName: "MessageForCall",
+    tableName: "messageForCall",
     timestamps: false
 });
 
