@@ -111,8 +111,8 @@ async function syncDatabase() {
         await models.City.sync();
         await models.Parent.sync();
         await models.Frequency.sync();
-        await models.Synagogue.sync();
         await models.Community.sync();
+        await models.Synagogue.sync();
 
         // טבלאות שתלויות בבסיסיות
         await models.Worker.sync();
