@@ -16,7 +16,7 @@ const Sharer = sequelize.define("Sharer", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeGender", // שם הטבלה TypeGender
+            model: "typeGender", // שם הטבלה TypeGender
             key: "TG_code"
         }
     },
@@ -36,7 +36,7 @@ const Sharer = sequelize.define("Sharer", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Parent", // שם הטבלה Parent
+            model: "parent", // שם הטבלה Parent
             key: "Pa_code"
         }
     },
@@ -44,7 +44,7 @@ const Sharer = sequelize.define("Sharer", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Parent", // שם הטבלה Parent
+            model: "parent", // שם הטבלה Parent
             key: "Pa_code"
         }
     },
@@ -52,7 +52,7 @@ const Sharer = sequelize.define("Sharer", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "City", // שם הטבלה City
+            model: "city", // שם הטבלה City
             key: "Ci_code"
         }
     },
