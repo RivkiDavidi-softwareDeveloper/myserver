@@ -55,7 +55,7 @@ const Student = sequelize.define("Student", {
         }
     },
     St_city_code: {
-        type: DataTypes.BIGINT,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
             model: "city",
