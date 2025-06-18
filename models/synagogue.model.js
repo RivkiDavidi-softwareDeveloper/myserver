@@ -16,7 +16,7 @@ const Synagogue = sequelize.define("Synagogue", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Community", // שם הטבלה
+            model: "community", // שם הטבלה
             key: "Com_code"
         }
     }
