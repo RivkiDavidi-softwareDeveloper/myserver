@@ -18,7 +18,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "TypeGender",
+            model: "typeGender",
             key: "TG_code"
         }
     },
@@ -42,7 +42,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Parent",
+            model: "parent",
             key: "Pa_code"
         }
     },
@@ -50,7 +50,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Parent",
+            model: "parent",
             key: "Pa_code"
         }
     },
@@ -58,7 +58,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "City",
+            model: "city",
             key: "Ci_code"
         }
     },
@@ -82,7 +82,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Worker",
+            model: "worker",
             key: "Wo_code"
         }
     },
@@ -90,7 +90,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "TypeActivityState",
+            model: "typeActivityState",
             key: "TAS_code"
         }
     },
@@ -98,7 +98,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "TypeRisk",
+            model: "typeRisk",
             key: "TR_code"
         }
     },
@@ -126,7 +126,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Synagogue",
+            model: "synagogue",
             key: "Sy_code"
         }
     },
@@ -134,7 +134,7 @@ const Student = sequelize.define("Student", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Frequency",
+            model: "frequency",
             key: "Fr_code"
         }
     },
@@ -156,7 +156,7 @@ const Student = sequelize.define("Student", {
         allowNull: true
     }
 }, {
-    tableName: "Student",
+    tableName: "student",
     timestamps: false
 });
 

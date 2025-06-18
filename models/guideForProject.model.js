@@ -12,7 +12,7 @@ const GuideForProject = sequelize.define("GuideForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Project", // שם הטבלה Project
+            model: "project", // שם הטבלה Project
             key: "Pr_code"
         }
     },

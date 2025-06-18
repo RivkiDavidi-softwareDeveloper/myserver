@@ -12,7 +12,7 @@ const StudentForProject = sequelize.define("StudentForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Project", // שם הטבלה Project
+            model: "project", // שם הטבלה Project
             key: "Pr_code"
         }
     },
@@ -20,7 +20,7 @@ const StudentForProject = sequelize.define("StudentForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Student", // שם הטבלה Student
+            model: "student", // שם הטבלה Student
             key: "St_code"
         }
     },
@@ -28,7 +28,7 @@ const StudentForProject = sequelize.define("StudentForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "GuideForProject", // שם הטבלה GuideForProject
+            model: "guideForProject", // שם הטבלה GuideForProject
             key: "GFP_code"
         }
     },

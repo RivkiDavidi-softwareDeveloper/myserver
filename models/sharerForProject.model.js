@@ -12,7 +12,7 @@ const SharerForProject = sequelize.define("SharerForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Project", // שם הטבלה Project
+            model: "project", // שם הטבלה Project
             key: "Pr_code"
         }
     },
@@ -20,7 +20,7 @@ const SharerForProject = sequelize.define("SharerForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Sharer", // שם הטבלה Sharer
+            model: "sharer", // שם הטבלה Sharer
             key: "Sh_code"
         }
     },
@@ -28,7 +28,7 @@ const SharerForProject = sequelize.define("SharerForProject", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "GuideForProject", // שם הטבלה GuideForProject
+            model: "guideForProject", // שם הטבלה GuideForProject
             key: "GFP_code"
         }
     },

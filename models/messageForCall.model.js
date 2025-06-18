@@ -12,7 +12,7 @@ const MessageForCall = sequelize.define("MessageForCall", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Calll", // שם הטבלה
+            model: "calll", // שם הטבלה
             key: "Ca_code"
         }
     },
@@ -20,7 +20,7 @@ const MessageForCall = sequelize.define("MessageForCall", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Worker", // שם הטבלה
+            model: "worker", // שם הטבלה
             key: "Wo_code"
         }
     },

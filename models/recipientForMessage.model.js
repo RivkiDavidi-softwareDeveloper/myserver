@@ -12,7 +12,7 @@ const RecipientForMessage = sequelize.define("RecipientForMessage", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "MessageForCall", // שם הטבלה
+            model: "messageForCall", // שם הטבלה
             key: "MFC_code"
         }
     },
@@ -20,7 +20,7 @@ const RecipientForMessage = sequelize.define("RecipientForMessage", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Worker", // שם הטבלה
+            model: "worker", // שם הטבלה
             key: "Wo_code"
         }
     },

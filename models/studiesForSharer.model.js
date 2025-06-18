@@ -12,7 +12,7 @@ const StudiesForSharer = sequelize.define("StudiesForSharer", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Sharer", // שם הטבלה Sharer
+            model: "sharer", // שם הטבלה Sharer
             key: "Sh_code"
         }
     },

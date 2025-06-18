@@ -12,7 +12,7 @@ const CommonStudentForWorker = sequelize.define("CommonStudentForWorker", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Worker", // שם הטבלה
+            model: "worker", // שם הטבלה
             key: "Wo_code"
         }
     },
@@ -20,7 +20,7 @@ const CommonStudentForWorker = sequelize.define("CommonStudentForWorker", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Student", // שם הטבלה
+            model: "student", // שם הטבלה
             key: "St_code"
         }
     }

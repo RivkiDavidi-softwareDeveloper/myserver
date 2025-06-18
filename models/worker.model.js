@@ -18,7 +18,7 @@ const Worker = sequelize.define("Worker", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeGender", // טבלה המקושרת
+            model: "typeGender", // טבלה המקושרת
             key: "TG_code"
         }
     },
@@ -26,7 +26,7 @@ const Worker = sequelize.define("Worker", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeWorker", // טבלה המקושרת
+            model: "typeWorker", // טבלה המקושרת
             key: "TW_code"
         }
     },

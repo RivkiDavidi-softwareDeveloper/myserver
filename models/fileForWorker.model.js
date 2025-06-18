@@ -16,7 +16,7 @@ const FileForWorker = sequelize.define("FileForWorker", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "Worker", // שם הטבלה
+            model: "worker", // שם הטבלה
             key: "Wo_code"
         }
     },

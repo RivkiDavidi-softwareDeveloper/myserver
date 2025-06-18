@@ -12,7 +12,7 @@ const Activity = sequelize.define("Activity", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Worker", // שם הטבלה
+            model: "worker", // שם הטבלה
             key: "Wo_code"
         }
     },

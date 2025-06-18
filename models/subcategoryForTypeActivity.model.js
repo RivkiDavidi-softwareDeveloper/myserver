@@ -12,7 +12,7 @@ const SubcategoryForTypeActivity = sequelize.define("SubcategoryForTypeActivity"
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeOfActivity", // שם הטבלה TypeOfActivity
+            model: "typeOfActivity", // שם הטבלה TypeOfActivity
             key: "TOA_code"
         }
     },

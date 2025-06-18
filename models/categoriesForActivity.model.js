@@ -12,7 +12,7 @@ const CategoriesForActivity = sequelize.define("CategoriesForActivity", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Activity", // שם הטבלה Activity
+            model: "activity", // שם הטבלה Activity
             key: "AFS_code"
         }
     },
@@ -20,7 +20,7 @@ const CategoriesForActivity = sequelize.define("CategoriesForActivity", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeOfActivity", // שם הטבלה TypeOfActivity
+            model: "typeOfActivity", // שם הטבלה TypeOfActivity
             key: "TOA_code"
         }
     }

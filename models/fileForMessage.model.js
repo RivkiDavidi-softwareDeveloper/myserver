@@ -16,7 +16,7 @@ const FileForMessage = sequelize.define("FileForMessage", {
         type: DataTypes.BIGINT,
         allowNull: false,
         references: {
-            model: "MessageForCall", // שם הטבלה
+            model: "messageForCall", // שם הטבלה
             key: "MFC_code"
         }
     },

@@ -12,7 +12,7 @@ const DifficultyStudent = sequelize.define("DifficultyStudent", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeDifficulty", // שם הטבלה
+            model: "typeDifficulty", // שם הטבלה
             key: "TD_code"
         }
     },
@@ -20,7 +20,7 @@ const DifficultyStudent = sequelize.define("DifficultyStudent", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "Student", // שם הטבלה
+            model: "student", // שם הטבלה
             key: "St_code"
         }
     }

@@ -14,7 +14,7 @@ const Task = sequelize.define("Task", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: 'Worker', // טבלה שמקורה ב- Worker
+            model: 'worker', // טבלה שמקורה ב- Worker
             key: 'Wo_code'
         }
     },

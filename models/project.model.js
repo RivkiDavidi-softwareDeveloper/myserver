@@ -32,7 +32,7 @@ const Project = sequelize.define("Project", {
         type: DataTypes.BIGINT,
         allowNull: true,
         references: {
-            model: "TypeGender", // שם הטבלה TypeGender
+            model: "typeGender", // שם הטבלה TypeGender
             key: "TG_code"
         }
     }
