@@ -19,6 +19,10 @@ const GuideForProject = sequelize.define("GuideForProject", {
     GFP_name: {
         type: DataTypes.STRING(30),
         allowNull: true
+    },
+    GFP_ID: {
+        type: DataTypes.STRING(9),
+        allowNull: true
     }
 }, {
     tableName: "guideForProject",
