@@ -94,11 +94,11 @@ exports.createGuideForProject = async (req, res) => {
 //עדכון
 exports.updateGuideForProject = async (req, res) => {
     try {
-        const { GFP_code_project, GFP_name } = req.body;
+        const { GFP_code_project, GFP_name,GFP_ID } = req.body;
         const guide = await GuideForProject.findByPk(req.params.id);
         if (!guide) return res.status(404).json({ message: "לא נמצא מדריך לעדכון" });
 
-        await guide.update({ GFP_code_project, GFP_name });
+        await guide.update({ GFP_code_project, GFP_name,GFP_ID });
         res.status(200).json(guide);
     } catch (error) {
         res.status(500).json({ message: "שגיאה בעדכון מדריך", error });
