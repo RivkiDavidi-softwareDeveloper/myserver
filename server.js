@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const models = require("./models");
 const sequelize = models.sequelize;
-
+const distanceRoutes = require('./routes/distance.routes');
 const studentRoutes = require("./routes/student.routes");
 const sharerRoutes = require("./routes/sharer.routes");
 
@@ -43,7 +43,7 @@ require("./cron/classUpgradeJob");
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use('/api/distance', distanceRoutes);
 app.use("/api/activities", activityRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/shareres", sharerRoutes);
@@ -90,3 +90,5 @@ app.listen(PORT, async () => {
         console.error("Unable to connect to the database:", error);
     }
 });
+
+
