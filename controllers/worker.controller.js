@@ -246,7 +246,7 @@ exports.getWorkerByNameAndPassword = async (req, res) => {
                 res.json(worker2);
             }
             else {
-                return res.status(404).json({ error: "Worker not found" });
+                return res.status(405).json({ error: "Worker not found" });
             }
         }
     } catch (error) {
