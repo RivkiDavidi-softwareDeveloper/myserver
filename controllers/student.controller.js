@@ -63,15 +63,20 @@ exports.getAllStudents = async (req, res) => {
 }
 // הוספת סטודנט חדש
 exports.addStudent = async (req, res) => {
-    const [studentDataRaw, parentFDataRaw, parentMDataRaw, difficultiesDataRaw, studiesDataRaw] = req.body.data;
     const t = await Student.sequelize.transaction();
     try {
+        const [studentDataRaw, parentFDataRaw, parentMDataRaw, difficultiesDataRaw, studiesDataRaw] = req.body.data;
+
         const parentFData = clean(parentFDataRaw, ['Pa_code']);
         const parentMData = clean(parentMDataRaw, ['Pa_code']);
         const studentData = clean(studentDataRaw, ['St_code']);
         const studiesData = clean(studiesDataRaw, ['SFS_code']);
+        const cleanedDifficulties = []
+        console.log(difficultiesDataRaw + "רשימת קשיים")
+        if (difficultiesDataRaw) {
+            cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
 
-        const cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
+        }
         //בדיקה אם קיים הורה אב
         let father = await Parent.findOne({ where: { Pa_ID: parentFData.Pa_ID } }, { transaction: t });
         if (!father) {
