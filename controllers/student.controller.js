@@ -162,7 +162,7 @@ exports.addStudent = async (req, res) => {
     } catch (err) {
         await t.rollback();
         console.error("Error in addStudent:", err);
-        res.status(500).json({ error: "שגיאה בהוספת תלמיד", details: err.message });
+        res.status(500).json({ error: "שגיאה בהוספת תלמיד", responseDetails: err.message });
     }
 
 };
