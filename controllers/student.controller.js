@@ -93,28 +93,15 @@ exports.addStudent = async (req, res) => {
                 studentData.St_worker_code = workerRecord.Wo_code;
             }
             else {
-                const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
+                workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
                 if (workerRecord) {
                     studentData.St_worker_code = workerRecord.Wo_code;
                 }
             }
         }
+
         //בדיקה לאיזה בית כנסת משויך
-        if (studentData.St_worker_code == -1) {
-            const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
-            if (workerRecord) {
-                studentData.St_worker_code = workerRecord.Wo_code;
-            }
-            else {
-                const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
-                if (workerRecord) {
-                    studentData.St_worker_code = workerRecord.Wo_code;
-                }
-            }
-        }
         if (studentData.St_code_synagogue == -1) {
-
-
             //קוד בית כנסת
             let SynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
             if (SynagogueRecord) {
@@ -171,11 +158,13 @@ exports.addStudent = async (req, res) => {
         await t.commit();
         res.status(201).json(student);
 
-    } catch (error) {
+
+    } catch (err) {
         await t.rollback();
-        console.error(error);
-        res.status(500).json({ error: "שגיאה בהוספת תלמיד" });
+        console.error("Error in addStudent:", err);
+        res.status(500).json({ error: "שגיאה בהוספת תלמיד", details: err.message });
     }
+
 };
 // עדכון פרטי סטודנט
 exports.updateStudent = async (req, res) => {
@@ -261,12 +250,13 @@ exports.updateStudent2 = async (req, res) => {
         const { St_code } = req.params;
         const { St_nusah_tfila } = req.body;
         // עדכון תלמיד
-        const student=await Student.update({
+        const student = await Student.update({
             St_nusah_tfila: St_nusah_tfila,
         }, {
-            where: { St_code: St_code }        });
+            where: { St_code: St_code }
+        });
 
-      //  res.json(student);
+        //  res.json(student);
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
     } catch (error) {
