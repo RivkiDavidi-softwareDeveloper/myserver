@@ -71,7 +71,7 @@ exports.addStudent = async (req, res) => {
         const parentMData = clean(parentMDataRaw, ['Pa_code']);
         const studentData = clean(studentDataRaw, ['St_code']);
         const studiesData = clean(studiesDataRaw, ['SFS_code']);
-        const cleanedDifficulties = []
+        let cleanedDifficulties = []
         console.log(difficultiesDataRaw + "רשימת קשיים")
         if (difficultiesDataRaw) {
             cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
