@@ -92,7 +92,7 @@ exports.addStudent = async (req, res) => {
 
         //בדיקה לאיזה עוובד משויך
         if (studentData.St_worker_code == -1) {
-            const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+            let workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
             if (workerRecord) {
                 studentData.St_worker_code = workerRecord.Wo_code;
             }
@@ -381,7 +381,7 @@ exports.importFromExcel = async (req, res) => {
             if (Pa_ID != null) {
 
                 // יצירת/עדכון הורה אב
-                const father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                let father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                 if (father) {
                     father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: father.Pa_code },
@@ -407,7 +407,7 @@ exports.importFromExcel = async (req, res) => {
             if (Pa_ID != null) {
 
                 // יצירת/עדכון הורה אם
-                const mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                let mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                 if (mother) {
                     mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: mother.Pa_code },
@@ -462,17 +462,17 @@ exports.importFromExcel = async (req, res) => {
             const nameCity = row["עיר"];
             let St_city_code = 1;
             if (nameCity) {
-                const cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
+                let cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
                 if (cityRecord) {
                     St_city_code = cityRecord.Ci_code;
                 }
                 else {
-                    const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                     cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
                     if (cityRecord) {
                         St_city_code = cityRecord.Ci_code;
                     }
                     else {
-                        const cityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
+                         cityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
                         if (cityRecord) {
                             St_city_code = cityRecord.Ci_code;
                         }
@@ -482,7 +482,7 @@ exports.importFromExcel = async (req, res) => {
             const nameWorker = row["פעיל/חונך ישיר"];
             let St_worker_code = 1;
             if (nameWorker) {
-                const workerRecord = await Worker.findOne({
+                let workerRecord = await Worker.findOne({
                     where: {
                         [Op.and]: [{
                             [Op.or]: [
@@ -514,12 +514,12 @@ exports.importFromExcel = async (req, res) => {
                     St_worker_code = workerRecord.Wo_code;
                 }
                 else {
-                    const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+                     workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
                     if (workerRecord) {
                         St_worker_code = workerRecord.Wo_code;
                     }
                     else {
-                        const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
+                         workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
                         if (workerRecord) {
                             St_worker_code = workerRecord.Wo_code;
                         }
@@ -527,13 +527,13 @@ exports.importFromExcel = async (req, res) => {
                 }
             }
             else {
-                const workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+                let workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
                 if (workerRecord) {
 
                     St_worker_code = workerRecord.Wo_code;
                 }
                 else {
-                    const workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000" }, { transaction: t });
+                     workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000" }, { transaction: t });
                     if (workerRecord) {
                         St_worker_code = workerRecord.Wo_code;
                     }

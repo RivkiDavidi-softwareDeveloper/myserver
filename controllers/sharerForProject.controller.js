@@ -100,7 +100,7 @@ exports.importFromExcel = async (req, res) => {
             }
             let sharerCode = 0;
             //בדיקה אם קיים כבר משתתף כזה
-            const sharerExists = await Sharer.findOne({ where: { Sh_ID: Sh_ID } });
+            let sharerExists = await Sharer.findOne({ where: { Sh_ID: Sh_ID } });
             if (sharerExists == null) {
                 let Pa_name = row["שם האב"];
                 if (Pa_name == undefined) {
@@ -228,7 +228,7 @@ exports.importFromExcel = async (req, res) => {
                 const nameCity = row["עיר"];
                 let Sh_city_code = 1;
                 if (nameCity) {
-                    const cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
+                    let cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
                     if (cityRecord) {
                         Sh_city_code = cityRecord.Ci_code;
                     }
@@ -247,7 +247,7 @@ exports.importFromExcel = async (req, res) => {
                 }
 
                 else {
-                    const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                    let cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
                     if (cityRecord) {
                         Sh_city_code = cityRecord.Ci_code;
                     }
@@ -403,12 +403,12 @@ exports.importFromExcel = async (req, res) => {
                 const nameCity = row["עיר"];
                 let Sh_city_code = 1;
                 if (nameCity) {
-                    const cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
+                    let cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
                     if (cityRecord) {
                         Sh_city_code = cityRecord.Ci_code;
                     }
                     else {
-                        const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                        let cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
                         if (cityRecord) {
                             Sh_city_code = cityRecord.Ci_code;
                         }
@@ -421,7 +421,7 @@ exports.importFromExcel = async (req, res) => {
                     }
                 }
                 else {
-                    const cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                    let cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
                     if (cityRecord) {
                         Sh_city_code = cityRecord.Ci_code;
                     }
