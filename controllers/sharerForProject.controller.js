@@ -538,7 +538,7 @@ exports.importFromExcel = async (req, res) => {
         fs.unlinkSync(filePath); // clean up
         res.json({ message: "הייבוא הושלם בהצלחה" });
     } catch (error) {
-        console.error(error);
+        console.error("Error in addSharers:", error);
         res.status(500).json({ message: "שגיאה בייבוא" });
     }
 };

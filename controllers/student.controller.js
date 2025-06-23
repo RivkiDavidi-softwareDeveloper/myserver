@@ -72,7 +72,6 @@ exports.addStudent = async (req, res) => {
         const studentData = clean(studentDataRaw, ['St_code']);
         const studiesData = clean(studiesDataRaw, ['SFS_code']);
         let cleanedDifficulties = []
-        console.log(difficultiesDataRaw + "רשימת קשיים")
         if (difficultiesDataRaw) {
             cleanedDifficulties = difficultiesDataRaw.map(d => clean(d, ['DS_code']));
 
@@ -244,7 +243,8 @@ exports.updateStudent = async (req, res) => {
 
     } catch (error) {
         await t.rollback();
-        console.error(error);
+        console.error("Error in addStudent:", err);
+
         res.status(500).json({ error: "שגיאה בעדכון תלמיד" });
     }
 };
