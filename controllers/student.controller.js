@@ -1,6 +1,6 @@
 // controllers/student.controller.js
-const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,
-    StudentForActivity, City, Worker, Synagogue, Community, CommonStudentForWorker } = require('../models');
+const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,Activity,
+    StudentForActivity, City, Worker, Synagogue, Community, CommonStudentForWorker,CategoriesForActivity,TypeOfActivity } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
@@ -286,9 +286,38 @@ exports.deleteStudent = async (req, res) => {
                 fs.unlinkSync(imagePath);
             }
         }
+        // שליפת כל הפעילויות שהחניך משתתף בהן
+        const studentActivities = await StudentForActivity.findAll({
+            where: { SFA_code_student: studentCode }
+        });
 
+        for (const sfa of studentActivities) {
+            const activityCode = sfa.SFA_code_activity;
+
+            // שליפת סוגי הפעילות
+            const categories = await CategoriesForActivity.findAll({
+                where: { CFA_code_activity: activityCode },
+                include: [{ model: TypeOfActivity }]
+            });
+
+            const hasGroupCategory = categories.some(cat =>
+                cat.TypeOfActivity && cat.TypeOfActivity.TOA_name === 'קבוצתית'
+            );
+
+            const studentCount = await StudentForActivity.count({
+                where: { SFA_code_activity: activityCode }
+            });
+
+            // תנאי למחיקת פעילות:
+            if (!hasGroupCategory || (hasGroupCategory && studentCount === 1)) {
+                // מחיקת כל הקשרים לפעילות
+                await StudentForActivity.destroy({ where: { SFA_code_activity: activityCode } });
+                await CategoriesForActivity.destroy({ where: { CFA_code_activity: activityCode } });
+                await Activity.destroy({ where: { AFS_code: activityCode } });
+            }
+        }
         // מחיקת רשומות תלויות
-        await StudentForActivity.destroy({ where: { SFA_code_student: studentCode } });
+       // await StudentForActivity.destroy({ where: { SFA_code_student: studentCode } });
         await DifficultyStudent.destroy({ where: { DS_student_code: studentCode } });
         await FileForStudent.destroy({ where: { FFS_student_code: studentCode } });
         await StudentForProject.destroy({ where: { SFP_code_student: studentCode } });
@@ -467,12 +496,12 @@ exports.importFromExcel = async (req, res) => {
                     St_city_code = cityRecord.Ci_code;
                 }
                 else {
-                     cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+                    cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
                     if (cityRecord) {
                         St_city_code = cityRecord.Ci_code;
                     }
                     else {
-                         cityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
+                        cityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
                         if (cityRecord) {
                             St_city_code = cityRecord.Ci_code;
                         }
@@ -514,12 +543,12 @@ exports.importFromExcel = async (req, res) => {
                     St_worker_code = workerRecord.Wo_code;
                 }
                 else {
-                     workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+                    workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
                     if (workerRecord) {
                         St_worker_code = workerRecord.Wo_code;
                     }
                     else {
-                         workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
+                        workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
                         if (workerRecord) {
                             St_worker_code = workerRecord.Wo_code;
                         }
@@ -533,7 +562,7 @@ exports.importFromExcel = async (req, res) => {
                     St_worker_code = workerRecord.Wo_code;
                 }
                 else {
-                     workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000" }, { transaction: t });
+                    workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000" }, { transaction: t });
                     if (workerRecord) {
                         St_worker_code = workerRecord.Wo_code;
                     }

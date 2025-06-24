@@ -36,6 +36,7 @@ const activityRoutes= require("./routes/activity.routes")
 const categoriesForActivityRoutes= require("./routes/categoriesForActivity.routes")
 const projectRoutes= require("./routes/project.routes")
 const subcategoryForTypeActivityRoutes= require("./routes/subcategoryForTypeActivity.routes")
+const dashboardRoutes= require("./routes/dashboard.routes")
 
 require("dotenv").config();
 require("./cron/classUpgradeJob");
@@ -44,6 +45,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/api/distance', distanceRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
 app.use("/api/activities", activityRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/shareres", sharerRoutes);
