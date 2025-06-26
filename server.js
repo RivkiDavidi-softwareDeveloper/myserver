@@ -44,13 +44,15 @@ require("./cron/classUpgradeJob");
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+
+
+
 app.use('/api/distance', distanceRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-
 app.use("/api/activities", activityRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/shareres", sharerRoutes);
-
 app.use("/api/cities", cityRoutes);
 app.use("/api/categoriesForActivities", categoriesForActivityRoutes);
 app.use("/api/typeActivityStates", typeActivityStateRoutes);
@@ -63,12 +65,10 @@ app.use("/api/systemLogins", systemLoginRoutes);
 app.use("/api/studentForProjects", studentForProjectRoutes);
 app.use("/api/sharerForProjects", sharerForProjectRoutes);
 app.use("/api/guideForProjects", guideForProjectRoutes);
-
 app.use("/api/studiesForStudents", studiesForStudentRoutes );
 app.use("/api/studiesForShareres", studiesForSharerRoutes);
 app.use("/api/parents", parentRoutes);
 app.use("/api/projects", projectRoutes);
-
 app.use("/api/workers", workerRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/calls", callRoutes);
@@ -82,10 +82,25 @@ app.use("/api/frequencies", frequencyRoutes);
 app.use("/api/difficultyStudents", difficultyStudentRoutes);
 app.use("/api/subcategoryForTypeActivities", subcategoryForTypeActivityRoutes);
 
+////סיכרון נתונים
+
+const http = require("http").createServer(app);
+const io = require("socket.io")(http, {
+  cors: { origin: "*" }
+});
+
+// שמירה על גישה ל־io בכל מקום
+app.set("socketio", io);
+
+// דוגמה - האזנה לחיבור
+io.on("connection", socket => {
+  console.log("Client connected");
+});
+
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, async () => {
+http.listen(PORT, async () => {
     try {
         await sequelize.authenticate();
         console.log(`Server is running on port ${PORT} and connected to DB`);
@@ -93,5 +108,6 @@ app.listen(PORT, async () => {
         console.error("Unable to connect to the database:", error);
     }
 });
+
 
 

@@ -66,6 +66,8 @@ exports.createStudentForProject = async (req, res) => {
     try {
         const { SFP_code, ...data } = req.body;
         const newRow = await StudentForProject.create(data);
+        const io = req.app.get("socketio");
+        io.emit("studentsForProjects-updated"); // משדר לכל הלקוחות
         res.status(201).json(newRow);
     } catch (error) {
         console.log(error);
@@ -112,7 +114,8 @@ exports.createStudentsForProjectForWorker = async (req, res) => {
         }
 
         await t.commit();
-
+        const io = req.app.get("socketio");
+        io.emit("studentsForProjects-updated"); // משדר לכל הלקוחות
         res.status(201).json({ message: "שויכו בהצלחה" });
     } catch (error) {
         await t.rollback();
@@ -129,6 +132,8 @@ exports.updateStudentForProject = async (req, res) => {
         if (!row) return res.status(404).json({ error: "לא נמצא" });
 
         await row.update(req.body);
+        const io = req.app.get("socketio");
+        io.emit("studentsForProjects-updated"); // משדר לכל הלקוחות
         res.json(row);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -143,6 +148,8 @@ exports.deleteStudentForProject = async (req, res) => {
         const row = await StudentForProject.findByPk(id);
         if (!row) return res.status(404).json({ error: "החניך לא נמצא" });
         await row.destroy();
+        const io = req.app.get("socketio");
+        io.emit("studentsForProjects-updated"); // משדר לכל הלקוחות
         res.json({ message: "נמחק בהצלחה" });
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -345,7 +345,7 @@ exports.importFromExcel = async (req, res) => {
                     }
                 }
                 else {
-                    Pa_ID=""
+                    Pa_ID = ""
                     mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
                 }
                 //פריט משתתף
@@ -530,11 +530,12 @@ exports.importFromExcel = async (req, res) => {
             }
 
 
-
+         
             await t.commit();
 
         }
-
+   const io = req.app.get("socketio");
+            io.emit("sharers-updated"); // משדר לכל הלקוחות
         fs.unlinkSync(filePath); // clean up
         res.json({ message: "הייבוא הושלם בהצלחה" });
     } catch (error) {
@@ -560,6 +561,8 @@ exports.deleteSharerForProject = async (req, res) => {
         const row = await SharerForProject.findByPk(id);
         if (!row) return res.status(404).json({ error: "המשתתף לא נמצא" });
         await row.destroy();
+          const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות
         res.json({ message: "נמחק בהצלחה" });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -580,6 +583,8 @@ exports.updateSharerForProject = async (req, res) => {
         sharerForProject.SFP_veshinantem = SFP_veshinantem;
         await sharerForProject.save();
         const updatedsharerForProject = await SharerForProject.findByPk(SFP_code);
+          const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות
         res.json(updatedsharerForProject);
     } catch (error) {
         console.log(error)

@@ -1,6 +1,6 @@
 // controllers/student.controller.js
-const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent,Activity,
-    StudentForActivity, City, Worker, Synagogue, Community, CommonStudentForWorker,CategoriesForActivity,TypeOfActivity } = require('../models');
+const { Parent, Student, DifficultyStudent, StudiesForStudent, StudentForProject, FileForStudent, Activity,
+    StudentForActivity, City, Worker, Synagogue, Community, CommonStudentForWorker, CategoriesForActivity, TypeOfActivity } = require('../models');
 
 const { clean } = require('../utils/cleaner');
 const fs = require('fs');
@@ -160,6 +160,8 @@ exports.addStudent = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
+        const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות
         res.status(201).json(student);
 
 
@@ -239,6 +241,8 @@ exports.updateStudent = async (req, res) => {
         }
 
         await t.commit();
+        const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
     } catch (error) {
@@ -260,7 +264,8 @@ exports.updateStudent2 = async (req, res) => {
         }, {
             where: { St_code: St_code }
         });
-
+        const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות
         //  res.json(student);
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
@@ -317,7 +322,7 @@ exports.deleteStudent = async (req, res) => {
             }
         }
         // מחיקת רשומות תלויות
-       // await StudentForActivity.destroy({ where: { SFA_code_student: studentCode } });
+        // await StudentForActivity.destroy({ where: { SFA_code_student: studentCode } });
         await DifficultyStudent.destroy({ where: { DS_student_code: studentCode } });
         await FileForStudent.destroy({ where: { FFS_student_code: studentCode } });
         await StudentForProject.destroy({ where: { SFP_code_student: studentCode } });
@@ -325,7 +330,8 @@ exports.deleteStudent = async (req, res) => {
         await CommonStudentForWorker.destroy({ where: { CSFP_code_student: studentCode } });
         // מחיקת התלמיד
         await Student.destroy({ where: { St_code: studentCode } });
-
+        const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות
         return res.status(200).json({ message: "החניך נמחק בהצלחה" });
 
     } catch (error) {
@@ -685,7 +691,8 @@ exports.importFromExcel = async (req, res) => {
             await t.commit();
 
         }
-
+        const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות
         fs.unlinkSync(filePath); // clean up
         res.json({ message: "הייבוא הושלם בהצלחה" });
     } catch (error) {

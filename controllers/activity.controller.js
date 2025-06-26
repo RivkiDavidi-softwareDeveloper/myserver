@@ -202,9 +202,7 @@ exports.getLastActivityDateForStudent = async (req, res) => {
 
 //הוספת פעילות
 exports.addActivity = async (req, res) => {
-    //  const [studentDataRaw, parentFDataRaw, parentMDataRaw, difficultiesDataRaw, studiesDataRaw] = req.body.data;
     const { StudentForActivities, CategoriesForActivities, ...activityData } = req.body;
-    // const t = await Student.sequelize.transaction();
     const t = await Activity.sequelize.transaction();
 
     try {
@@ -232,6 +230,8 @@ exports.addActivity = async (req, res) => {
         }
 
         await t.commit();
+        const io = req.app.get("socketio");
+        io.emit("activities-updated"); // משדר לכל הלקוחות
 
         return res.status(201).json({ message: "הפעילות נוספה בהצלחה", AFS_code });
     } catch (error) {

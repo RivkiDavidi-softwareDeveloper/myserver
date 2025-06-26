@@ -84,6 +84,8 @@ exports.createGuideForProject = async (req, res) => {
     try {
         const { GFP_code, ...data } = req.body;
         const guide = await GuideForProject.create(data);
+        const io = req.app.get("socketio");
+        io.emit("guides-updated"); // משדר לכל הלקוחות
         res.status(201).json(guide);
     } catch (error) {
         console.log(error)
@@ -94,11 +96,13 @@ exports.createGuideForProject = async (req, res) => {
 //עדכון
 exports.updateGuideForProject = async (req, res) => {
     try {
-        const { GFP_code_project, GFP_name,GFP_ID } = req.body;
+        const { GFP_code_project, GFP_name, GFP_ID } = req.body;
         const guide = await GuideForProject.findByPk(req.params.id);
         if (!guide) return res.status(404).json({ message: "לא נמצא מדריך לעדכון" });
 
-        await guide.update({ GFP_code_project, GFP_name,GFP_ID });
+        await guide.update({ GFP_code_project, GFP_name, GFP_ID });
+        const io = req.app.get("socketio");
+        io.emit("guides-updated"); // משדר לכל הלקוחות
         res.status(200).json(guide);
     } catch (error) {
         res.status(500).json({ message: "שגיאה בעדכון מדריך", error });
@@ -111,8 +115,10 @@ exports.deleteGuideForProject = async (req, res) => {
         if (!guide) return res.status(404).json({ error: "לא נמצא מדריך למחיקה" });
 
         await guide.destroy();
-        res.status(204).json({ message: "נמחק בהצלחה",  });
+        const io = req.app.get("socketio");
+        io.emit("guides-updated"); // משדר לכל הלקוחות
+        res.status(204).json({ message: "נמחק בהצלחה", });
     } catch (error) {
-        res.status(500).json({ error: "שגיאה במחיקת מדריך",  });
+        res.status(500).json({ error: "שגיאה במחיקת מדריך", });
     }
 };
