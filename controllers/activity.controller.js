@@ -138,19 +138,19 @@ exports.getAllActivities = async (req, res) => {
             if (genderOrder === 0) {
                 compareOrder = [
                     () => workerA.localeCompare(workerB),
-                    () => dateA.getTime() - dateB.getTime(),
+                    () => dateB.getTime() - dateA.getTime(),
                     () => studentA.localeCompare(studentB)
                 ];
             } else if (genderOrder === 1) {
                 compareOrder = [
-                    () => dateA.getTime() - dateB.getTime(),
+                    () => dateB.getTime() - dateA.getTime(),
                     () => workerA.localeCompare(workerB),
                     () => studentA.localeCompare(studentB)
                 ];
             } else {
                 compareOrder = [
                     () => studentA.localeCompare(studentB),
-                    () => dateA.getTime() - dateB.getTime(),
+                    () => dateB.getTime() - dateA.getTime(),
                     () => workerA.localeCompare(workerB)
                 ];
             }

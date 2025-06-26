@@ -1,7 +1,9 @@
 const { Worker, Student, Activity, TypeOfActivity, CategoriesForActivity } = require('../models');
+const sequelize = require("../config/database"); // ייבוא נכון
+
 const { Op, fn, col, literal } = require("sequelize");
 const { format, startOfMonth, startOfWeek, startOfDay, startOfYear, endOfMonth, subMonths } = require("date-fns");
-
+const { QueryTypes } = require("sequelize");
 exports.getMatrixStats = async (req, res) => {
     try {
         const { codeFilter } = req.query;
@@ -275,37 +277,9 @@ exports.getMatrixStats = async (req, res) => {
             matrix[7][4] = rankBy(seatings, 'countSeating').get(FilterCode) || 0;
         }
         // ערך 1: קוד הפעיל עם הזמן המצטבר הגבוה ביותר השבוע
-        if (allTime.length > 0) {
-            const maxTime = allTime.reduce((max, curr) => {
-                return (Number(curr.sum || 0) > Number(max.sum || 0)) ? curr : max;
-            }, { sum: 0 });
-            matrix[8][0]=maxTime.AFS_worker_code || 0;
-        } else {
-            matrix[8][0]= 0;
-        }
-
-/*         // ערך 2: קוד הפעיל של הפעילות האחרונה מסוג "שיבוץ בישיבה"
-        const lastSeating = await Activity.findOne({
-            where: {
-                AFS_date: { [Op.gte]: weekStart }
-            },
-            include: [{
-                model: CategoriesForActivity,
-                required: true,
-                attributes: [],
-                include: [{
-                    model: TypeOfActivity,
-                    required: true,
-                    attributes: [],
-                    where: { TOA_name: "שיבוץ בישיבה" }
-                }]
-            }],
-            order: [['AFS_date', 'DESC']],
-            attributes: ['AFS_worker_code'],
-            raw: true
-        });
-
-        matrix[8].push(lastSeating?.AFS_worker_code || 0); */
+        matrix[8][0] = (await getTopWorkerOfWeek());
+       
+        matrix[8][1] = (await getLastWorkerForSpecificType());
 
         res.json(matrix);
 
@@ -314,3 +288,76 @@ exports.getMatrixStats = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+async function getTopWorkerOfWeek() {
+    // שלב 1: סכום זמן פעילות פר עובד-חניך לשבוע הנוכחי
+    const rawResults = await sequelize.query(`
+        SELECT 
+            a.AFS_worker_code AS workerCode,
+            sfa.SFA_code_student AS studentCode,
+            SUM(a.AFS_activity_time) AS totalTime
+        FROM 
+            activity a
+        JOIN 
+            studentForActivity sfa ON a.AFS_code = sfa.SFA_code_activity
+        WHERE 
+            YEARWEEK(a.AFS_date, 1) = YEARWEEK(CURDATE(), 1)
+        GROUP BY 
+            a.AFS_worker_code, sfa.SFA_code_student
+    `, { type: QueryTypes.SELECT });
+
+    // שלב 2: לכל עובד – החניך עם הזמן הגבוה ביותר
+    const maxTimePerWorker = {}; // { workerCode: maxTime }
+
+    for (const row of rawResults) {
+        const { workerCode, totalTime } = row;
+
+        if (!maxTimePerWorker[workerCode] || totalTime > maxTimePerWorker[workerCode]) {
+            maxTimePerWorker[workerCode] = totalTime;
+        }
+    }
+
+    // שלב 3: מציאת העובד עם הזמן המקסימלי מכל העובדים
+    let topWorker = null;
+    let topTime = -1;
+
+    for (const [workerCode, time] of Object.entries(maxTimePerWorker)) {
+        if (time > topTime) {
+            topTime = time;
+            topWorker = workerCode;
+        }
+    }
+    /*     return { workerCode: Number(topWorker), totalTime: topTime };
+     */
+    return Number(topWorker);;
+}
+
+async function getLastWorkerForSpecificType() {
+    try {
+        const result = await Activity.findOne({
+            include: [
+                {
+                    model: CategoriesForActivity,
+                    as: 'CategoriesForActivities', // שים לב לשם association לפי הגדרה בפועל אם שונה
+                    include: [
+                        {
+                            model: TypeOfActivity,
+                            where: {
+                                TOA_name: "שיבוץ בישיבה"
+                            }
+                        }
+                    ]
+                }
+            ],
+            order: [["AFS_date", "DESC"]],
+        });
+
+        if (!result) return null;
+
+        return result.AFS_worker_code;
+    } catch (error) {
+        console.error("Error in getLastWorkerForSpecificType:", error);
+        throw error;
+    }
+}
+
