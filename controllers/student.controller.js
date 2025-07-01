@@ -133,10 +133,12 @@ exports.addStudent = async (req, res) => {
                 }
             }
         }
-
+        const today = new Date();
+        let St_reception_date = today.toISOString().split('T')[0];
         // יצירת תלמיד עם קודי ההורים
         const student = await Student.create({
             ...studentData,
+            St_reception_date:St_reception_date,
             St_father_code: father.Pa_code,
             St_mother_code: mother.Pa_code
         }, { transaction: t });
@@ -161,8 +163,8 @@ exports.addStudent = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
-    /*     const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות */
+        /*     const io = req.app.get("socketio");
+            io.emit("students-updated"); // משדר לכל הלקוחות */
         res.status(201).json(student);
 
 
@@ -242,8 +244,8 @@ exports.updateStudent = async (req, res) => {
         }
 
         await t.commit();
-    /*     const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות */
+        /*     const io = req.app.get("socketio");
+            io.emit("students-updated"); // משדר לכל הלקוחות */
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
     } catch (error) {
@@ -265,8 +267,8 @@ exports.updateStudent2 = async (req, res) => {
         }, {
             where: { St_code: St_code }
         });
-     /*    const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות */
+        /*    const io = req.app.get("socketio");
+           io.emit("students-updated"); // משדר לכל הלקוחות */
         //  res.json(student);
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
@@ -331,8 +333,8 @@ exports.deleteStudent = async (req, res) => {
         await CommonStudentForWorker.destroy({ where: { CSFP_code_student: studentCode } });
         // מחיקת התלמיד
         await Student.destroy({ where: { St_code: studentCode } });
-/*         const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות */
+        /*         const io = req.app.get("socketio");
+                io.emit("students-updated"); // משדר לכל הלקוחות */
         return res.status(200).json({ message: "החניך נמחק בהצלחה" });
 
     } catch (error) {
@@ -612,6 +614,10 @@ exports.importFromExcel = async (req, res) => {
                 }
             }
             let St_amount_frequency = row["כמות*"];
+            let St_hebrew_date = "";
+            const today = new Date();
+            let St_reception_date = today.toISOString().split('T')[0];
+
             if (!St_ID || !St_name || !St_Fname) continue;
             // יצירת תלמיד עם קודי ההורים
             const student = await Student.create({
@@ -622,7 +628,7 @@ exports.importFromExcel = async (req, res) => {
                 St_description_reception_status: St_description_reception_status
                 , St_contact: St_contact, St_contact_phone: St_contact_phone, St_requester: St_requester, St_socioeconomic_status: St_socioeconomic_status,
                 St_code_synagogue: St_code_synagogue, St_code_frequency: St_code_frequency, St_amount_frequency: St_amount_frequency,
-                St_name_school_bein_hazmanim: "", St_nusah_tfila: "", St_veshinantem: ""
+                St_name_school_bein_hazmanim: "", St_nusah_tfila: "", St_veshinantem: "", St_hebrew_date: St_hebrew_date, St_reception_date: St_reception_date
             }, { transaction: t });
 
             const studentCode = student.St_code;
