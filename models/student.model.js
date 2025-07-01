@@ -155,6 +155,15 @@ const Student = sequelize.define("Student", {
         type: DataTypes.STRING(40),
         allowNull: true
     }
+    ,
+    St_hebrew_date: {
+        type: DataTypes.STRING(40),
+        allowNull: true
+    },
+    St_reception_date: {
+        type: DataTypes.STRING(10),
+        allowNull: true
+    }
 }, {
     tableName: "student",
     timestamps: false
