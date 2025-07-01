@@ -9,19 +9,19 @@ const Project = sequelize.define("Project", {
         allowNull: false
     },
     Pr_name: {
-        type: DataTypes.STRING(40),
+        type: DataTypes.STRING(70),
         allowNull: false
     },
     Pr_content: {
-        type: DataTypes.STRING(1000),
+        type: DataTypes.STRING(2000),
         allowNull: true
     },
     Pr_description: {
-        type: DataTypes.STRING(500),
+        type: DataTypes.STRING(2000),
         allowNull: true
     },
     Pr_Place: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(100),
         allowNull: true
     },
     Pr_date: {
