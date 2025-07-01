@@ -13,7 +13,7 @@ const Project = sequelize.define("Project", {
         allowNull: false
     },
     Pr_content: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING(1000),
         allowNull: true
     },
     Pr_description: {
