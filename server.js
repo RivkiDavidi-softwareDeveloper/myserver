@@ -84,23 +84,23 @@ app.use("/api/subcategoryForTypeActivities", subcategoryForTypeActivityRoutes);
 
 ////סיכרון נתונים
 
-const http = require("http").createServer(app);
+/* const http = require("http").createServer(app);
 const io = require("socket.io")(http, {
   cors: { origin: "*" }
 });
-
+ */
 // שמירה על גישה ל־io בכל מקום
-app.set("socketio", io);
-
+/* app.set("socketio", io);
+ */
 // דוגמה - האזנה לחיבור
-io.on("connection", socket => {
+/* io.on("connection", socket => {
   console.log("Client connected");
 });
-
+ */
 
 const PORT = process.env.PORT || 3000;
 
-http.listen(PORT, async () => {
+app.listen(PORT, async () => {
     try {
         await sequelize.authenticate();
         console.log(`Server is running on port ${PORT} and connected to DB`);
@@ -108,6 +108,13 @@ http.listen(PORT, async () => {
         console.error("Unable to connect to the database:", error);
     }
 });
-
-
+/* http.listen(PORT, async () => {
+    try {
+        await sequelize.authenticate();
+        console.log(`Server is running on port ${PORT} and connected to DB`);
+    } catch (error) {
+        console.error("Unable to connect to the database:", error);
+    }
+});
+ */
 

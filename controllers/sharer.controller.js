@@ -30,8 +30,8 @@ exports.getSharerById = async (req, res) => {
 exports.createSharer = async (req, res) => {
     try {
         const newSharer = await Sharer.create(req.body);
-          const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות
+   /*        const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.status(201).json(newSharer);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -91,8 +91,8 @@ exports.updateSharer = async (req, res) => {
         }
 
         await t.commit();
-          const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות
+/*           const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.status(200).json({ message: "המשתתף עודכן בהצלחה" });
 
     } catch (error) {
@@ -109,8 +109,8 @@ exports.deleteSharer = async (req, res) => {
             return res.status(404).json({ error: 'Sharer not found' });
         }
         await sharer.destroy();
-          const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות
+      /*     const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: error.message });

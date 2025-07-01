@@ -65,8 +65,8 @@ exports.addTask = async (req, res) => {
     try {
         const { Ta_code, ...data } = req.body;
         const task = await Task.create(data);
-        const io = req.app.get("socketio");
-        io.emit("tasks-updated"); // משדר לכל הלקוחות
+ /*        const io = req.app.get("socketio");
+        io.emit("tasks-updated"); // משדר לכל הלקוחות */
         res.status(201).json(task);
     } catch (error) {
         console.log(error);
@@ -98,8 +98,8 @@ exports.updateTask = async (req, res) => {
                 { model: Worker } // מחזיר את כל השדות של העובד
             ]
         });
-        const io = req.app.get("socketio");
-        io.emit("tasks-updated"); // משדר לכל הלקוחות
+/*         const io = req.app.get("socketio");
+        io.emit("tasks-updated"); // משדר לכל הלקוחות */
         res.json(updatedTask);
     } catch (error) {
         console.log(error);
@@ -116,8 +116,8 @@ exports.deleteTask = async (req, res) => {
         if (!task) return res.status(404).json({ error: "Task not found" });
 
         await task.destroy();
-        const io = req.app.get("socketio");
-        io.emit("tasks-updated"); // משדר לכל הלקוחות
+ /*        const io = req.app.get("socketio");
+        io.emit("tasks-updated"); // משדר לכל הלקוחות */
         res.json({ message: "Task deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: "Error deleting task" });

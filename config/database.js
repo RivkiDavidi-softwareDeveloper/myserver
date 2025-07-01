@@ -8,9 +8,21 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         dialect: process.env.DB_DIALECT,
-        logging: false
+        logging: false,
+/*         pool: {
+            max: 20,
+            min: 0,
+            acquire: 60000,
+            idle: 10000
+        } */
+        pool: {
+            max: 30,
+            min: 0,
+            acquire: 120000, // 2 דקות
+            idle: 10000
+        }
+
     }
 );
 
 module.exports = sequelize;
-

@@ -230,8 +230,8 @@ exports.addActivity = async (req, res) => {
         }
 
         await t.commit();
-        const io = req.app.get("socketio");
-        io.emit("activities-updated"); // משדר לכל הלקוחות
+   /*      const io = req.app.get("socketio");
+        io.emit("activities-updated"); // משדר לכל הלקוחות */
 
         return res.status(201).json({ message: "הפעילות נוספה בהצלחה", AFS_code });
     } catch (error) {

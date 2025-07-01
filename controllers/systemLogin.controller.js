@@ -45,8 +45,8 @@ exports.updateSystemLogin = async (req, res) => {
         login.SL_name = systemLogin.SL_name;
         login.SL_password = systemLogin.SL_password;
         await login.save();
-  const io = req.app.get("socketio");
-            io.emit("systemLogin-updated"); // משדר לכל הלקוחות
+  /* const io = req.app.get("socketio");
+            io.emit("systemLogin-updated"); // משדר לכל הלקוחות */
         res.json(login);
     } catch (error) {
         res.status(500).json({ error: "Error updating SystemLogin" });

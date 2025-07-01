@@ -60,11 +60,11 @@ exports.addProject = async (req, res) => {
     try {
         const { Pr_code, ...data } = req.body;
         const newProject = await Project.create(data);
-                        const io = req.app.get("socketio");
-        io.emit("projects-updated"); // משדר לכל הלקוחות
+      /*   const io = req.app.get("socketio");
+        io.emit("projects-updated"); // משדר לכל הלקוחות */
         res.status(201).json(newProject);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -86,8 +86,8 @@ exports.updateProject = async (req, res) => {
         project.Pr_gender = Pr_gender;
         await project.save();
         const updatedproject = await Project.findByPk(Pr_code);
-              const io = req.app.get("socketio");
-        io.emit("projects-updated"); // משדר לכל הלקוחות
+      /*   const io = req.app.get("socketio");
+        io.emit("projects-updated"); // משדר לכל הלקוחות */
         res.json(updatedproject);
     } catch (error) {
         console.log(error)
@@ -104,8 +104,8 @@ exports.deleteProject = async (req, res) => {
         if (!project) return res.status(404).json({ error: "project not found" });
 
         await project.destroy();
-              const io = req.app.get("socketio");
-        io.emit("projects-updated"); // משדר לכל הלקוחות
+/*         const io = req.app.get("socketio");
+        io.emit("projects-updated"); // משדר לכל הלקוחות */
         res.json({ message: "project deleted successfully" });
     } catch (error) {
         console.log(error)

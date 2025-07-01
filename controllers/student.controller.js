@@ -52,7 +52,8 @@ exports.getAllStudents = async (req, res) => {
                 result = a.St_gender - b.St_gender;
             }
             if (result === 0) {
-                result = a.St_name.localeCompare(b.St_name);
+                result = a.St_Fname.localeCompare(b.St_Fname) || a.St_name.localeCompare(b.St_name);
+
             }
             return result;
         });
@@ -160,8 +161,8 @@ exports.addStudent = async (req, res) => {
         }, { transaction: t });
 
         await t.commit();
-        const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות
+    /*     const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות */
         res.status(201).json(student);
 
 
@@ -241,8 +242,8 @@ exports.updateStudent = async (req, res) => {
         }
 
         await t.commit();
-        const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות
+    /*     const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות */
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
     } catch (error) {
@@ -264,8 +265,8 @@ exports.updateStudent2 = async (req, res) => {
         }, {
             where: { St_code: St_code }
         });
-        const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות
+     /*    const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות */
         //  res.json(student);
         res.status(200).json({ message: "התלמיד עודכן בהצלחה" });
 
@@ -330,8 +331,8 @@ exports.deleteStudent = async (req, res) => {
         await CommonStudentForWorker.destroy({ where: { CSFP_code_student: studentCode } });
         // מחיקת התלמיד
         await Student.destroy({ where: { St_code: studentCode } });
-        const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות
+/*         const io = req.app.get("socketio");
+        io.emit("students-updated"); // משדר לכל הלקוחות */
         return res.status(200).json({ message: "החניך נמחק בהצלחה" });
 
     } catch (error) {
@@ -379,6 +380,8 @@ exports.getStudentImage = async (req, res) => {
 };
 //העלאת קובץ אקסל חניכים
 exports.importFromExcel = async (req, res) => {
+    const t = await Student.sequelize.transaction();
+
     try {
         if (!req.file) {
             return res.status(400).json({ message: "לא נשלח קובץ" });
@@ -396,15 +399,46 @@ exports.importFromExcel = async (req, res) => {
               const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
               const timestamp = `${formattedDate}_${formattedTime}`;
        */
-        const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
-        fs.writeFileSync(filePath, req.file.buffer);
+        /*      const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
+             fs.writeFileSync(filePath, req.file.buffer);
+             const workbook = XLSX.readFile(filePath); */
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
 
-        const workbook = XLSX.readFile(filePath);
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { range: 1 }); // skip first row
+        const rows = XLSX.utils.sheet_to_json(sheet, { range: 2 }); // skip first row
+        //פעיל לא ידוע
+        let unknownworkerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
+        if (!unknownworkerRecord) {
+            unknownworkerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
+        }
+        //עיר לא ידוע
+        let unknowncityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+        if (!unknowncityRecord) {
+            unknowncityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
+        }
+        //קוד בית כנסת לא ידוע
+        let unknownSynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
+        if (!unknownSynagogueRecord) {
+            //קהילה לא ידוע
+            let CommunityCode = 1
+            let unknownCommunityRecord = await Community.findOne({ where: { Com_name: "לא ידוע" } });
+            if (unknownCommunityRecord) {
+
+                CommunityCode = unknownCommunityRecord.Com_code;
+            }
+            else {
+                unknownCommunityRecord = await Community.create({ Com_name: "לא ידוע" }, { transaction: t });
+                if (unknownCommunityRecord) {
+                    CommunityCode = unknownCommunityRecord.Com_code;
+                }
+            }
+            unknownSynagogueRecord = await Synagogue.create({ Sy_name: "לא ידוע", Sy_code_Community: CommunityCode }, { transaction: t });
+
+        }
+        let father = await Parent.findOne({});
+        let mother = await Parent.findOne({});
 
         for (const row of rows) {
-            const t = await Student.sequelize.transaction();
 
             let Pa_name = row["שם אב"];
             if (Pa_name == null) {
@@ -414,9 +448,8 @@ exports.importFromExcel = async (req, res) => {
             let Pa_work = row["עיסוק אב"];
             let Pa_cell_phone = row["פל' אב"];
             if (Pa_ID != null) {
-
                 // יצירת/עדכון הורה אב
-                let father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                 if (father) {
                     father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: father.Pa_code },
@@ -442,7 +475,7 @@ exports.importFromExcel = async (req, res) => {
             if (Pa_ID != null) {
 
                 // יצירת/עדכון הורה אם
-                let mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
                 if (mother) {
                     mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: mother.Pa_code },
@@ -456,11 +489,13 @@ exports.importFromExcel = async (req, res) => {
             else {
                 mother = await Parent.create({ Pa_ID, Pa_name, Pa_cell_phone, Pa_work }, { transaction: t });
             }
+            const St_father_code = father.Pa_code;
+            const St_mother_code = mother.Pa_code;
             //פריט תלמיד
-            const St_ID = row["ת.ז"];
-            const St_name = row["שם פרטי"];
-            const St_Fname = row["שם משפחה"];
-            const gender = row["מגדר"];
+            const St_ID = row["ת.ז*"];
+            const St_name = row["שם פרטי*"];
+            const St_Fname = row["שם משפחה*"];
+            const gender = row["מגדר*"];
             let St_gender = 1
             if (gender == "בת") { St_gender = 2 }
             console.log(gender + "מגדר")
@@ -479,11 +514,10 @@ exports.importFromExcel = async (req, res) => {
             }
 
             const St_address = row["כתובת"];
-            const St_cell_phone = row["פלאפון חניך"];
+            const St_cell_phone = row["פלאפון חניך*"];
             const St_phone = row["טלפון בית"];
             const St_email = row["מייל"];
-            const St_father_code = father.Pa_code;
-            const St_mother_code = mother.Pa_code;
+
             const activityStatus = row["מצב פעילות"];
             let St_activity_status = 1;
             if (activityStatus == "מושהה") {
@@ -494,7 +528,7 @@ exports.importFromExcel = async (req, res) => {
                     St_activity_status = 3
                 }
             }
-            const nameCity = row["עיר"];
+            const nameCity = row["עיר*"];
             let St_city_code = 1;
             if (nameCity) {
                 let cityRecord = await City.findOne({ where: { Ci_name: nameCity.trim() } });
@@ -502,17 +536,11 @@ exports.importFromExcel = async (req, res) => {
                     St_city_code = cityRecord.Ci_code;
                 }
                 else {
-                    cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
-                    if (cityRecord) {
-                        St_city_code = cityRecord.Ci_code;
-                    }
-                    else {
-                        cityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
-                        if (cityRecord) {
-                            St_city_code = cityRecord.Ci_code;
-                        }
-                    }
+                    St_city_code = unknowncityRecord.Ci_code;
                 }
+            }
+            else {
+                St_city_code = unknowncityRecord.Ci_code;
             }
             const nameWorker = row["פעיל/חונך ישיר"];
             let St_worker_code = 1;
@@ -549,32 +577,13 @@ exports.importFromExcel = async (req, res) => {
                     St_worker_code = workerRecord.Wo_code;
                 }
                 else {
-                    workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
-                    if (workerRecord) {
-                        St_worker_code = workerRecord.Wo_code;
-                    }
-                    else {
-                        workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: t });
-                        if (workerRecord) {
-                            St_worker_code = workerRecord.Wo_code;
-                        }
-                    }
+                    St_worker_code = unknownworkerRecord.Wo_code;
                 }
             }
             else {
-                let workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
-                if (workerRecord) {
-
-                    St_worker_code = workerRecord.Wo_code;
-                }
-                else {
-                    workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000" }, { transaction: t });
-                    if (workerRecord) {
-                        St_worker_code = workerRecord.Wo_code;
-                    }
-                }
+                St_worker_code = unknownworkerRecord.Wo_code;
             }
-            const risk = row["מצב סיכון"];
+            const risk = row["מצב סיכון*"];
             let St_risk_code = 1;
             if (risk == "סיכון מוגבר") {
                 St_risk_code = 2
@@ -590,35 +599,9 @@ exports.importFromExcel = async (req, res) => {
             const St_contact_phone = row["פל' איש צוות מקושר"];
             const St_requester = row['הפניה התקבלה ע"י'];
             const St_socioeconomic_status = row["מצב סוציואקנומי (1-10)"];
-            let St_code_synagogue = -1;
-
-
-            //קוד בית כנסת
-            let SynagogueRecord = await Synagogue.findOne({ where: { Sy_name: "לא ידוע" } });
-            if (SynagogueRecord) {
-
-                St_code_synagogue = SynagogueRecord.Sy_code;
-            }
-            else {
-                //קוד קהילה
-                let CommunityCode = -1
-                let CommunityRecord = await Community.findOne({ where: { Com_name: "לא ידוע" } });
-                if (CommunityRecord) {
-
-                    CommunityCode = CommunityRecord.Com_code;
-                }
-                else {
-                    CommunityRecord = await Community.create({ Com_name: "לא ידוע" }, { transaction: t });
-                    if (CommunityRecord) {
-                        CommunityCode = CommunityRecord.Com_code;
-                    }
-                }
-                SynagogueRecord = await Synagogue.create({ Sy_name: "לא ידוע", Sy_code_Community: CommunityCode }, { transaction: t });
-                if (SynagogueRecord) {
-                    St_code_synagogue = SynagogueRecord.Sy_code;
-                }
-            }
-            const frequency = row["סוג"];
+            //בית כנסת
+            let St_code_synagogue = unknownSynagogueRecord.Sy_code;
+            const frequency = row["סוג*"];
             let St_code_frequency = 1;
             if (frequency == "בשבועות") {
                 St_code_frequency = 2
@@ -628,7 +611,7 @@ exports.importFromExcel = async (req, res) => {
                     St_code_frequency = 3
                 }
             }
-            let St_amount_frequency = row["כמות"];
+            let St_amount_frequency = row["כמות*"];
             if (!St_ID || !St_name || !St_Fname) continue;
             // יצירת תלמיד עם קודי ההורים
             const student = await Student.create({
@@ -688,12 +671,13 @@ exports.importFromExcel = async (req, res) => {
                 SFS_previous_institutions: SFS_previous_institutions, SFS_previous_school: SFS_previous_school, SFS_last_upgrade_year: currentYear - 1
 
             }, { transaction: t });
-            await t.commit();
 
         }
-        const io = req.app.get("socketio");
-        io.emit("students-updated"); // משדר לכל הלקוחות
-        fs.unlinkSync(filePath); // clean up
+        await t.commit();
+
+        /*         const io = req.app.get("socketio");
+                io.emit("students-updated"); // משדר לכל הלקוחות
+                fs.unlinkSync(filePath); // clean up */
         res.json({ message: "הייבוא הושלם בהצלחה" });
     } catch (error) {
         console.error(error);

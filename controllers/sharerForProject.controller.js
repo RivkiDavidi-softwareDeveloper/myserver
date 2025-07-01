@@ -69,6 +69,8 @@ exports.getAllProjectsForSharer = async (req, res) => {
 };
 //העלאת קובץ אקסל משתתפים
 exports.importFromExcel = async (req, res) => {
+    const t = await Sharer.sequelize.transaction();
+
     try {
         if (!req.file) {
             return res.status(400).json({ message: "לא נשלח קובץ" });
@@ -79,21 +81,36 @@ exports.importFromExcel = async (req, res) => {
         if (!fs.existsSync(imageDir)) {
             fs.mkdirSync(imageDir, { recursive: true });
         }
-        /*קבייעת שם תמונה עם תאריך ושעה  
-             const now = new Date();
-              const formattedDate = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
-              const formattedTime = `${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}`;
-              const timestamp = `${formattedDate}_${formattedTime}`;
-       */
-        const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
-        fs.writeFileSync(filePath, req.file.buffer);
+        /*         const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
+                fs.writeFileSync(filePath, req.file.buffer);
+                const workbook = XLSX.readFile(filePath);
+        
+                const filePath = path.join(imageDir, `${req.file.originalname}.xlsx`);
+                fs.writeFileSync(filePath, req.file.buffer);
+                const workbook = XLSX.readFile(filePath); */
 
-        const workbook = XLSX.readFile(filePath);
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+
+
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { range: 0 }); // skip first row
 
+        //מדריך לא ידוע
+        let unknownguideRecord = await GuideForProject.findOne({ where: { GFP_code_project: codeProject, GFP_name: "לא משויך למדריך" } });
+        if (!unknownguideRecord) {
+            unknownguideRecord = await GuideForProject.create({
+                GFP_code_project: codeProject, GFP_name: "לא משויך למדריך"
+            }, { transaction: t });
+        }
+        //עיר לא ידוע
+        let unknowncityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
+        if (!unknowncityRecord) {
+            unknowncityRecord = await City.create({ Ci_name: "לא ידוע" }, { transaction: t });
+        }
+        let father = await Parent.findOne({});
+        let mother = await Parent.findOne({});
+
         for (const row of rows) {
-            const t = await Sharer.sequelize.transaction();
             let Sh_ID = row["ת.ז."];
             if (Sh_ID == null) {
                 Sh_ID = "0000000000"
@@ -110,7 +127,6 @@ exports.importFromExcel = async (req, res) => {
 
                 let Pa_work = ""
                 let Pa_cell_phone = row["פל' אב"];
-                let father = await Parent.findOne();
                 if (Pa_ID !== undefined) {
 
                     // יצירת/עדכון הורה אב
@@ -151,9 +167,6 @@ exports.importFromExcel = async (req, res) => {
                 Pa_ID = row["ת.ז. האם"];
                 Pa_work = "";
                 Pa_cell_phone = row["פל' אם"];
-                let mother = await Parent.findOne();
-
-
                 if (Pa_ID !== undefined) {
 
                     // יצירת/עדכון הורה אם
@@ -184,38 +197,7 @@ exports.importFromExcel = async (req, res) => {
                 let Sh_gender = 1
                 const rawDate = row["ת.לידה לועזי"];
                 let Sh_birthday = "";
-                if (typeof rawDate === 'number') {
-                    // תאריך בפורמט Excel מספרי
-                    const jsDate = XLSX.SSF.parse_date_code(rawDate);
-                    const year = jsDate.y;
-                    const month = String(jsDate.m).padStart(2, '0');
-                    const day = String(jsDate.d).padStart(2, '0');
-                    Sh_birthday = `${year}-${month}-${day}`;
-                } else if (typeof rawDate === 'string') {
-                    let day, month, year;
 
-                    // רגקס גמיש שתומך גם ב-dd/mm/yyyy וגם ב-d/m/yyyy וכו'
-                    const regexDMY = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/;
-                    const regexYMD = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-
-                    if (regexDMY.test(rawDate)) {
-                        const match = rawDate.match(regexDMY);
-                        day = String(match[1]).padStart(2, '0');
-                        month = String(match[2]).padStart(2, '0');
-                        year = match[3];
-                        Sh_birthday = `${year}-${month}-${day}`;
-                    } else if (regexYMD.test(rawDate)) {
-                        const match = rawDate.match(regexYMD);
-                        year = match[1];
-                        month = String(match[2]).padStart(2, '0');
-                        day = String(match[3]).padStart(2, '0');
-                        Sh_birthday = `${year}-${month}-${day}`;
-                    } else {
-                        console.error("פורמט תאריך לא נתמך:", rawDate);
-                    }
-                } else {
-                    console.error("פורמט לא מזוהה:", rawDate);
-                }
                 let street = row["רחוב"]
                 let number = row["מספר"];
                 if (!street) { street = "" }
@@ -233,30 +215,11 @@ exports.importFromExcel = async (req, res) => {
                         Sh_city_code = cityRecord.Ci_code;
                     }
                     else {
-                        cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
-                        if (cityRecord) {
-                            Sh_city_code = cityRecord.Ci_code;
-                        }
-                        else {
-                            cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
-                            if (cityRecord) {
-                                Sh_city_code = cityRecord.Ci_code;
-                            }
-                        }
+                        Sh_city_code = unknowncityRecord.Ci_code;
                     }
                 }
-
                 else {
-                    let cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
-                    if (cityRecord) {
-                        Sh_city_code = cityRecord.Ci_code;
-                    }
-                    else {
-                        cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
-                        if (cityRecord) {
-                            Sh_city_code = cityRecord.Ci_code;
-                        }
-                    }
+                    Sh_city_code = unknowncityRecord.Ci_code;
                 }
                 if (!Sh_ID || !Sh_name || !Sh_Fname) continue;
 
@@ -355,43 +318,6 @@ exports.importFromExcel = async (req, res) => {
                 const rawDate = row["ת.לידה לועזי"];
                 let Sh_birthday = "";
 
-                if (typeof rawDate === 'number') {
-                    // תאריך בפורמט Excel מספרי
-                    const jsDate = XLSX.SSF.parse_date_code(rawDate);
-                    const year = jsDate.y;
-                    const month = String(jsDate.m).padStart(2, '0');
-                    const day = String(jsDate.d).padStart(2, '0');
-                    Sh_birthday = `${year}-${month}-${day}`;
-
-                } else if (typeof rawDate === 'string') {
-                    let day, month, year;
-
-                    // רגקס גמיש שתומך גם ב-dd/mm/yyyy וגם ב-d/m/yyyy וכו'
-                    const regexDMY = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/;
-                    const regexYMD = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-
-                    if (regexDMY.test(rawDate)) {
-                        const match = rawDate.match(regexDMY);
-                        day = String(match[1]).padStart(2, '0');
-                        month = String(match[2]).padStart(2, '0');
-                        year = match[3];
-                        Sh_birthday = `${year}-${month}-${day}`;
-
-                    } else if (regexYMD.test(rawDate)) {
-                        const match = rawDate.match(regexYMD);
-                        year = match[1];
-                        month = String(match[2]).padStart(2, '0');
-                        day = String(match[3]).padStart(2, '0');
-                        Sh_birthday = `${year}-${month}-${day}`;
-
-                    } else {
-                        console.error("פורמט תאריך לא נתמך:", rawDate);
-                    }
-                } else {
-                    console.error("פורמט לא מזוהה:", rawDate);
-                }
-                console.error("תאריך", Sh_birthday);
-
                 const Sh_address = row["רחוב"] + " " + row["מספר"];
                 const Sh_cell_phone = row["פל' בחור"];
                 const Sh_phone = row["טלפון בית"];
@@ -408,29 +334,11 @@ exports.importFromExcel = async (req, res) => {
                         Sh_city_code = cityRecord.Ci_code;
                     }
                     else {
-                        let cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
-                        if (cityRecord) {
-                            Sh_city_code = cityRecord.Ci_code;
-                        }
-                        else {
-                            cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
-                            if (cityRecord) {
-                                Sh_city_code = cityRecord.Ci_code;
-                            }
-                        }
+                        Sh_city_code = unknowncityRecord.Ci_code;
                     }
                 }
                 else {
-                    let cityRecord = await City.findOne({ where: { Ci_name: "לא ידוע" } });
-                    if (cityRecord) {
-                        Sh_city_code = cityRecord.Ci_code;
-                    }
-                    else {
-                        cityRecord = await City.create({ where: { Ci_name: "לא ידוע" } });
-                        if (cityRecord) {
-                            Sh_city_code = cityRecord.Ci_code;
-                        }
-                    }
+                    Sh_city_code = unknowncityRecord.Ci_code;
                 }
 
                 if (!Sh_ID || !Sh_name || !Sh_Fname) continue;
@@ -479,23 +387,16 @@ exports.importFromExcel = async (req, res) => {
                     SFP_code_guide = guideRecord.GFP_code;
                 }
                 else {
-                    const guide = await GuideForProject.create({
-                        GFP_code_project: codeProject, GFP_name: nameGuide
-                    }, { transaction: t });
-                    SFP_code_guide = guide.GFP_code;
+                    /*   const guide = await GuideForProject.create({
+                          GFP_code_project: codeProject, GFP_name: nameGuide
+                      }, { transaction: t });
+                      SFP_code_guide = guide.GFP_code; */
+                    SFP_code_guide = unknownguideRecord.GFP_code;
+
                 }
             }
             else {
-                const guideRecord = await GuideForProject.findOne({ where: { GFP_code_project: codeProject, GFP_name: "לא משויך למדריך" } });
-                if (guideRecord) {
-                    SFP_code_guide = guideRecord.GFP_code;
-                }
-                else {
-                    const guide = await GuideForProject.create({
-                        GFP_code_project: codeProject, GFP_name: "לא משויך למדריך"
-                    }, { transaction: t });
-                    SFP_code_guide = guide.GFP_code;
-                }
+                SFP_code_guide = unknownguideRecord.GFP_code;
             }
             const sharerForProject = await SharerForProject.findOne({
                 where: {
@@ -530,14 +431,15 @@ exports.importFromExcel = async (req, res) => {
             }
 
 
-         
-            await t.commit();
+
 
         }
-   const io = req.app.get("socketio");
-            io.emit("sharers-updated"); // משדר לכל הלקוחות
-        fs.unlinkSync(filePath); // clean up
-        res.json({ message: "הייבוא הושלם בהצלחה" });
+        await t.commit();
+
+/*         const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות */
+/*         fs.unlinkSync(filePath); // clean up
+ */        res.json({ message: "הייבוא הושלם בהצלחה" });
     } catch (error) {
         console.error("Error in addSharers:", error);
         res.status(500).json({ message: "שגיאה בייבוא" });
@@ -561,8 +463,8 @@ exports.deleteSharerForProject = async (req, res) => {
         const row = await SharerForProject.findByPk(id);
         if (!row) return res.status(404).json({ error: "המשתתף לא נמצא" });
         await row.destroy();
-          const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות
+ /*        const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.json({ message: "נמחק בהצלחה" });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -583,11 +485,45 @@ exports.updateSharerForProject = async (req, res) => {
         sharerForProject.SFP_veshinantem = SFP_veshinantem;
         await sharerForProject.save();
         const updatedsharerForProject = await SharerForProject.findByPk(SFP_code);
-          const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות
+/*         const io = req.app.get("socketio");
+        io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.json(updatedsharerForProject);
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: "Error updating project" });
     }
 };
+/*
+  קוד לא תקין עבור קובץ האקסל שמתקבל
+  if (typeof rawDate === 'number') {
+       // תאריך בפורמט Excel מספרי
+       const jsDate = XLSX.SSF.parse_date_code(rawDate);
+       const year = jsDate.y;
+       const month = String(jsDate.m).padStart(2, '0');
+       const day = String(jsDate.d).padStart(2, '0');
+       Sh_birthday = `${year}-${month}-${day}`;
+   } else if (typeof rawDate === 'string') {
+       let day, month, year;
+
+       // רגקס גמיש שתומך גם ב-dd/mm/yyyy וגם ב-d/m/yyyy וכו'
+       const regexDMY = /^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/;
+       const regexYMD = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+
+       if (regexDMY.test(rawDate)) {
+           const match = rawDate.match(regexDMY);
+           day = String(match[1]).padStart(2, '0');
+           month = String(match[2]).padStart(2, '0');
+           year = match[3];
+           Sh_birthday = `${year}-${month}-${day}`;
+       } else if (regexYMD.test(rawDate)) {
+           const match = rawDate.match(regexYMD);
+           year = match[1];
+           month = String(match[2]).padStart(2, '0');
+           day = String(match[3]).padStart(2, '0');
+           Sh_birthday = `${year}-${month}-${day}`;
+       } else {
+           console.error("פורמט תאריך לא נתמך:", rawDate);
+       }
+   } else {
+       console.error("פורמט לא מזוהה:", rawDate);
+   } */

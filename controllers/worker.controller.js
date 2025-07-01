@@ -46,7 +46,8 @@ exports.getAllWorkers = async (req, res) => {
                 result = a.Wo_type_worker - b.Wo_type_worker;
             }
             if (result === 0) {
-                result = a.Wo_name.localeCompare(b.Wo_name);
+                result =  a.Wo_Fname.localeCompare(b.Wo_Fname) ||  a.Wo_name.localeCompare(b.Wo_name);
+
             }
             return result;
         });
@@ -82,8 +83,8 @@ exports.addWorker = async (req, res) => {
     try {
         const { Wo_code, ...data } = req.body; // מסיר את Wo_code כדי שה־AUTO_INCREMENT יפעל
         const worker = await Worker.create(data);
-         const io = req.app.get("socketio");
-            io.emit("workers-updated"); // משדר לכל הלקוחות
+   /*       const io = req.app.get("socketio");
+            io.emit("workers-updated"); // משדר לכל הלקוחות */
         res.status(201).json(worker);
     } catch (error) {
         console.log(error);
@@ -115,8 +116,8 @@ exports.updateWorker = async (req, res) => {
 
         // שליפה מחדש כולל הנתונים של המגדר וסוג העובד
         const updatedWorker = await Worker.findByPk(Wo_code);
-     const io = req.app.get("socketio");
-            io.emit("workers-updated"); // משדר לכל הלקוחות
+/*      const io = req.app.get("socketio");
+            io.emit("workers-updated"); // משדר לכל הלקוחות */
         res.json(updatedWorker);
     } catch (error) {
         console.log(error)
@@ -175,8 +176,8 @@ exports.deleteWorker = async (req, res) => {
         await worker.destroy({ transaction });
 
         await transaction.commit();
-             const io = req.app.get("socketio");
-            io.emit("workers-updated"); // משדר לכל הלקוחות
+/*              const io = req.app.get("socketio");
+            io.emit("workers-updated"); // משדר לכל הלקוחות */
         res.json({ message: "העובד נמחק בהצלחה" });
 
         }

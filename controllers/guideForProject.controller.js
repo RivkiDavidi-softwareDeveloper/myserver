@@ -1,6 +1,6 @@
 
 const { GuideForProject, StudentForProject, SharerForProject, Student, Sharer } = require('../models');
-
+//שליפה כולל חניכים ומשתתפים
 exports.getAllGuidesForProjectWithSudentsAndSharers = async (req, res) => {
     try {
         const { codeProject } = req.query;
@@ -23,13 +23,13 @@ exports.getAllGuidesForProjectWithSudentsAndSharers = async (req, res) => {
             include: [{
                 model: Student
             }],
-            order: [[Student, 'St_name', 'ASC'], [Student, 'St_Fname', 'ASC']]
+            order: [[Student, 'St_Fname', 'ASC'], [Student, 'St_name', 'ASC']]
         });
 
         const sharers = await SharerForProject.findAll({
             where: { SFP_code_project: projectCode },
             include: [{ model: Sharer }],
-            order: [[Sharer, 'Sh_name', 'ASC'], [Sharer, 'Sh_Fname', 'ASC']]
+            order: [[Sharer, 'Sh_Fname', 'ASC'], [Sharer, 'Sh_name', 'ASC']]
         });
 
         // מיפוי מדריכים עם רשימות תואמות של חניכים ומשתתפים
@@ -84,8 +84,8 @@ exports.createGuideForProject = async (req, res) => {
     try {
         const { GFP_code, ...data } = req.body;
         const guide = await GuideForProject.create(data);
-        const io = req.app.get("socketio");
-        io.emit("guides-updated"); // משדר לכל הלקוחות
+/*         const io = req.app.get("socketio");
+        io.emit("guides-updated"); // משדר לכל הלקוחות */
         res.status(201).json(guide);
     } catch (error) {
         console.log(error)
@@ -102,8 +102,8 @@ exports.updateGuideForProject = async (req, res) => {
 
         await guide.update({ GFP_code_project, GFP_name, GFP_ID });
         const io = req.app.get("socketio");
-        io.emit("guides-updated"); // משדר לכל הלקוחות
-        res.status(200).json(guide);
+   /*      io.emit("guides-updated"); // משדר לכל הלקוחות
+        res.status(200).json(guide); */
     } catch (error) {
         res.status(500).json({ message: "שגיאה בעדכון מדריך", error });
     }
@@ -115,8 +115,8 @@ exports.deleteGuideForProject = async (req, res) => {
         if (!guide) return res.status(404).json({ error: "לא נמצא מדריך למחיקה" });
 
         await guide.destroy();
-        const io = req.app.get("socketio");
-        io.emit("guides-updated"); // משדר לכל הלקוחות
+/*         const io = req.app.get("socketio");
+        io.emit("guides-updated"); // משדר לכל הלקוחות */
         res.status(204).json({ message: "נמחק בהצלחה", });
     } catch (error) {
         res.status(500).json({ error: "שגיאה במחיקת מדריך", });
