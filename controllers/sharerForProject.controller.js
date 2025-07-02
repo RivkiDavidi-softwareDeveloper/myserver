@@ -195,9 +195,32 @@ exports.importFromExcel = async (req, res) => {
                 const Sh_name = row["שם פרטי"];
                 const Sh_Fname = row["שם משפחה"];
                 let Sh_gender = 1
-                const rawDate = row["ת.לידה לועזי"];
+                        const rawDate = row["ת.לידה לועזי"];
+
                 let Sh_birthday = "";
 
+                if (rawDate && typeof rawDate === 'string' && rawDate.includes('/')) {
+                    const [day, month, year] = rawDate.split('/');
+
+                    if (day && month && year) {
+                        Sh_birthday = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    }
+                }
+                if (Sh_birthday == "") {
+                    let jsDate;
+                    if (typeof rawDate === 'number') {
+                        jsDate = XLSX.SSF.parse_date_code(rawDate);
+                        if (jsDate!=null) {
+                            const year = jsDate.y;
+                            const month = String(jsDate.m).padStart(2, '0');
+                            const day = String(jsDate.d).padStart(2, '0');
+                            Sh_birthday = `${year}-${month}-${day}`;
+                        }
+                    }
+                    else {
+                        console.error("פורמט לא מזוהה:", rawDate);
+                    }
+                }
                 let street = row["רחוב"]
                 let number = row["מספר"];
                 if (!street) { street = "" }
@@ -316,8 +339,31 @@ exports.importFromExcel = async (req, res) => {
                 const Sh_Fname = row["שם משפחה"];
                 let Sh_gender = 1
                 const rawDate = row["ת.לידה לועזי"];
+
                 let Sh_birthday = "";
 
+                if (rawDate && typeof rawDate === 'string' && rawDate.includes('/')) {
+                    const [day, month, year] = rawDate.split('/');
+
+                    if (day && month && year) {
+                        Sh_birthday = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    }
+                }
+                if (Sh_birthday == "") {
+                    let jsDate;
+                    if (typeof rawDate === 'number') {
+                        jsDate = XLSX.SSF.parse_date_code(rawDate);
+                        if (jsDate!=null) {
+                            const year = jsDate.y;
+                            const month = String(jsDate.m).padStart(2, '0');
+                            const day = String(jsDate.d).padStart(2, '0');
+                            Sh_birthday = `${year}-${month}-${day}`;
+                        }
+                    }
+                    else {
+                        console.error("פורמט לא מזוהה:", rawDate);
+                    }
+                }
                 const Sh_address = row["רחוב"] + " " + row["מספר"];
                 const Sh_cell_phone = row["פל' בחור"];
                 const Sh_phone = row["טלפון בית"];
@@ -463,8 +509,8 @@ exports.deleteSharerForProject = async (req, res) => {
         const row = await SharerForProject.findByPk(id);
         if (!row) return res.status(404).json({ error: "המשתתף לא נמצא" });
         await row.destroy();
- /*        const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות */
+        /*        const io = req.app.get("socketio");
+               io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.json({ message: "נמחק בהצלחה" });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -485,8 +531,8 @@ exports.updateSharerForProject = async (req, res) => {
         sharerForProject.SFP_veshinantem = SFP_veshinantem;
         await sharerForProject.save();
         const updatedsharerForProject = await SharerForProject.findByPk(SFP_code);
-/*         const io = req.app.get("socketio");
-        io.emit("sharers-updated"); // משדר לכל הלקוחות */
+        /*         const io = req.app.get("socketio");
+                io.emit("sharers-updated"); // משדר לכל הלקוחות */
         res.json(updatedsharerForProject);
     } catch (error) {
         console.log(error)
