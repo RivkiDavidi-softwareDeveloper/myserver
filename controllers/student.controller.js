@@ -78,14 +78,14 @@ exports.addStudent = async (req, res) => {
 
         }
         //בדיקה אם קיים הורה אב
-        let father = await Parent.findOne({ where: { Pa_ID: parentFData.Pa_ID } }, { transaction: t });
+        let father = await Parent.findOne({ where: { Pa_cell_phone: parentFData.Pa_cell_phone, Pa_name: parentFData.Pa_name, Pa_ID: parentFData.Pa_ID} }, { transaction: t });
         if (!father) {
             // יצירת הורה אב
             father = await Parent.create(parentFData, { transaction: t });
 
         }
         //בדיקה אם קיים הורה אם
-        let mother = await Parent.findOne({ where: { Pa_ID: parentMData.Pa_ID } }, { transaction: t });
+        let mother = await Parent.findOne({ where: {Pa_cell_phone: parentMData.Pa_cell_phone, Pa_name: parentMData.Pa_name, Pa_ID: parentMData.Pa_ID } }, { transaction: t });
         if (!mother) {
             // יצירת הורה אם
             mother = await Parent.create(parentMData, { transaction: t });
@@ -451,7 +451,7 @@ exports.importFromExcel = async (req, res) => {
             let Pa_cell_phone = row["פל' אב"];
             if (Pa_ID != null) {
                 // יצירת/עדכון הורה אב
-                father = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                father = await Parent.findOne({ where: { Pa_cell_phone:Pa_cell_phone, Pa_name: Pa_name, Pa_ID: Pa_ID } });
                 if (father) {
                     father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: father.Pa_code },
@@ -477,7 +477,7 @@ exports.importFromExcel = async (req, res) => {
             if (Pa_ID != null) {
 
                 // יצירת/עדכון הורה אם
-                mother = await Parent.findOne({ where: { Pa_ID: Pa_ID } });
+                mother = await Parent.findOne({ where: { Pa_cell_phone:Pa_cell_phone, Pa_name: Pa_name, Pa_ID: Pa_ID } });
                 if (mother) {
                     mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: mother.Pa_code },
