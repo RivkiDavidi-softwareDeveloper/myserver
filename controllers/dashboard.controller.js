@@ -48,8 +48,8 @@ exports.getMatrixStats = async (req, res) => {
 
         // שורה 0
         if (FilterCode === -1 || FilterCode === -2 || FilterCode === -3) {
-            matrix[0][0] = await Worker.count({ where: { ...workerWhere, Wo_type_worker: 1 } });
-            matrix[0][1] = await Worker.count({ where: { ...workerWhere, Wo_type_worker: 2 } });
+            matrix[0][0] = await Worker.count({ where: { ...workerWhere, Wo_type_worker: 1,Wo_status_code:1 } });
+            matrix[0][1] = await Worker.count({ where: { ...workerWhere, Wo_type_worker: 2,Wo_status_code:1 } });
         }
 
         if (FilterCode > 0) {
