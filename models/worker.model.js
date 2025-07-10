@@ -49,6 +49,14 @@ const Worker = sequelize.define("Worker", {
     Wo_email: {
         type: DataTypes.STRING(90),
         allowNull: true
+    },
+    Wo_status_code: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+            model: 'typeWorkerStatus',
+            key: 'TWS_code'
+        }
     }
 }, {
     tableName: "worker",
@@ -59,8 +67,10 @@ const Worker = sequelize.define("Worker", {
 Worker.associate = function (models) {
     Worker.belongsTo(models.TypeGender, { foreignKey: "Wo_gender" });
     Worker.belongsTo(models.TypeWorker, { foreignKey: "Wo_type_worker" });
+    Worker.belongsTo(models.typeWorkerStatus, {  foreignKey: 'Wo_status_code'});
     Worker.hasMany(models.Activity, { foreignKey: "AFS_worker_code" });
-    Worker.hasMany(models.Task, { foreignKey: "Ta_worker_code"});
+    Worker.hasMany(models.Task, { foreignKey: "Ta_worker_code" });
+
 };
 
 module.exports = Worker;

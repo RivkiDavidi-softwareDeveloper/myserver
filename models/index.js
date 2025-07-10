@@ -61,6 +61,7 @@ const models = {
     TypeGender: require("./typeGender.model"),
     TypeTask: require("./typeTask.model"),
     TypeOfActivity: require("./typeOfActivity.model"),
+    typeWorkerStatus:require("./typeWorkerStatus.model"),
     SystemLogin: require("./systemLogin.model"),
     Parent: require("./parent.model"),
     City: require("./city.model"),
@@ -108,6 +109,7 @@ async function syncDatabase() {
         await models.TypeTask.sync();
         await models.TypeDifficulty.sync();
         await models.TypeOfActivity.sync();
+        await models.typeWorkerStatus.sync();
         await models.City.sync();
         await models.Parent.sync();
         await models.Frequency.sync();

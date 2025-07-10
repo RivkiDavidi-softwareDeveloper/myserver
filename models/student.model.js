@@ -56,7 +56,7 @@ const Student = sequelize.define("Student", {
     },
     St_city_code: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: "city",
             key: "Ci_code"
@@ -96,7 +96,7 @@ const Student = sequelize.define("Student", {
     },
     St_risk_code: {
         type: DataTypes.BIGINT,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: "typeRisk",
             key: "TR_code"
@@ -132,7 +132,7 @@ const Student = sequelize.define("Student", {
     },
     St_code_frequency: {
         type: DataTypes.BIGINT,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: "frequency",
             key: "Fr_code"
