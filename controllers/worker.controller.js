@@ -1,4 +1,4 @@
-const { Worker,MessageForCall, TypeGender, TypeWorker, SystemLogin, Task, Student, FileForWorker, CommonStudentForWorker, RecipientForMessage, Activity } = require('../models');
+const { Worker, MessageForCall, TypeGender, TypeWorker, SystemLogin, Task, Student, FileForWorker, CommonStudentForWorker, RecipientForMessage, Activity } = require('../models');
 
 const { Op, Sequelize } = require('sequelize');
 
@@ -46,7 +46,7 @@ exports.getAllWorkers = async (req, res) => {
                 result = a.Wo_type_worker - b.Wo_type_worker;
             }
             if (result === 0) {
-                result =  a.Wo_Fname.localeCompare(b.Wo_Fname) ||  a.Wo_name.localeCompare(b.Wo_name);
+                result = a.Wo_Fname.localeCompare(b.Wo_Fname) || a.Wo_name.localeCompare(b.Wo_name);
 
             }
             return result;
@@ -83,8 +83,8 @@ exports.addWorker = async (req, res) => {
     try {
         const { Wo_code, ...data } = req.body; // מסיר את Wo_code כדי שה־AUTO_INCREMENT יפעל
         const worker = await Worker.create(data);
-   /*       const io = req.app.get("socketio");
-            io.emit("workers-updated"); // משדר לכל הלקוחות */
+        /*       const io = req.app.get("socketio");
+                 io.emit("workers-updated"); // משדר לכל הלקוחות */
         res.status(201).json(worker);
     } catch (error) {
         console.log(error);
@@ -97,7 +97,7 @@ exports.addWorker = async (req, res) => {
 exports.updateWorker = async (req, res) => {
     try {
         const { Wo_code } = req.params;
-        const { Wo_ID, Wo_gender, Wo_type_worker, Wo_name, Wo_Fname, Wo_password, Wo_cell_phone, Wo_email } = req.body;
+        const { Wo_ID, Wo_gender, Wo_type_worker, Wo_name, Wo_Fname, Wo_password, Wo_cell_phone, Wo_email, Wo_status_code } = req.body;
 
         const worker = await Worker.findByPk(Wo_code);
         if (!worker) return res.status(404).json({ error: "Worker not found" });
@@ -111,13 +111,13 @@ exports.updateWorker = async (req, res) => {
         worker.Wo_password = Wo_password;
         worker.Wo_cell_phone = Wo_cell_phone;
         worker.Wo_email = Wo_email;
-
+        worker.Wo_status_code = Wo_status_code
         await worker.save();
 
         // שליפה מחדש כולל הנתונים של המגדר וסוג העובד
         const updatedWorker = await Worker.findByPk(Wo_code);
-/*      const io = req.app.get("socketio");
-            io.emit("workers-updated"); // משדר לכל הלקוחות */
+        /*      const io = req.app.get("socketio");
+                    io.emit("workers-updated"); // משדר לכל הלקוחות */
         res.json(updatedWorker);
     } catch (error) {
         console.log(error)
@@ -141,52 +141,52 @@ exports.deleteWorker = async (req, res) => {
         let message = await MessageForCall.findOne({ where: { MFC_sender_worker_code: Wo_code }, transaction });
 
         let student = await Student.findOne({ where: { St_worker_code: Wo_code }, transaction });
-        if (activity || student|| message) {
-       return res.json({ message: "לעובד זה משויכים חניכים/פעילויות/שיחות , לא ניתן למוחקו" });
+        if (activity || student || message) {
+            return res.json({ message: "לעובד זה משויכים חניכים/פעילויות/שיחות , לא ניתן למוחקו" });
 
         }
-        else{
-  // מחיקת משימות של העובד
-        await Task.destroy({ where: { Ta_worker_code: Wo_code }, transaction });
+        else {
+            // מחיקת משימות של העובד
+            await Task.destroy({ where: { Ta_worker_code: Wo_code }, transaction });
 
-        /*  // עדכון סטודנטים שהעובד היה מקושר אליהם (מניעת שגיאת FK)
-         let St_worker_code = null
-         let workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
-         if (workerRecord) {
-             St_worker_code = workerRecord.Wo_code;
-         }
-         else {
-              workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: transaction });
+            /*  // עדכון סטודנטים שהעובד היה מקושר אליהם (מניעת שגיאת FK)
+             let St_worker_code = null
+             let workerRecord = await Worker.findOne({ where: { Wo_name: "לא", Wo_Fname: "ידוע" } });
              if (workerRecord) {
                  St_worker_code = workerRecord.Wo_code;
              }
-         }
-         await Student.update({ St_worker_code: St_worker_code }, { where: { St_worker_code: Wo_code }, transaction });
-  */
-        // מחיקת קבצים של העובד
-        await FileForWorker.destroy({ where: { FFW_worker_code: Wo_code }, transaction });
+             else {
+                  workerRecord = await Worker.create({ Wo_name: "לא", Wo_Fname: "ידוע", Wo_ID: "000000000", Wo_type_worker: 1, Wo_gender: 1, Wo_password: "0000" }, { transaction: transaction });
+                 if (workerRecord) {
+                     St_worker_code = workerRecord.Wo_code;
+                 }
+             }
+             await Student.update({ St_worker_code: St_worker_code }, { where: { St_worker_code: Wo_code }, transaction });
+      */
+            // מחיקת קבצים של העובד
+            await FileForWorker.destroy({ where: { FFW_worker_code: Wo_code }, transaction });
 
-        // מחיקת חניכים משותפים של העובד
-        await CommonStudentForWorker.destroy({ where: { CSFP_code_worker: Wo_code }, transaction });
+            // מחיקת חניכים משותפים של העובד
+            await CommonStudentForWorker.destroy({ where: { CSFP_code_worker: Wo_code }, transaction });
 
-        // מחיקת מקבל הודעה שהוא העובד
-        await RecipientForMessage.destroy({ where: { RFM_worker_code: Wo_code }, transaction });
+            // מחיקת מקבל הודעה שהוא העובד
+            await RecipientForMessage.destroy({ where: { RFM_worker_code: Wo_code }, transaction });
 
-        // מחיקת העובד עצמו
-        await worker.destroy({ transaction });
+            // מחיקת העובד עצמו
+            await worker.destroy({ transaction });
 
-        await transaction.commit();
-/*              const io = req.app.get("socketio");
-            io.emit("workers-updated"); // משדר לכל הלקוחות */
-        res.json({ message: "העובד נמחק בהצלחה" });
+            await transaction.commit();
+            /*              const io = req.app.get("socketio");
+                        io.emit("workers-updated"); // משדר לכל הלקוחות */
+            res.json({ message: "העובד נמחק בהצלחה" });
 
         }
-      
+
     } catch (error) {
         console.error(error);
         await transaction.rollback();
-     //   res.status(500).json({ error: "Error deleting worker" });
-                res.status(500).json({ error: "אירעה שגיאה במחיקת עובד" });
+        //   res.status(500).json({ error: "Error deleting worker" });
+        res.status(500).json({ error: "אירעה שגיאה במחיקת עובד" });
 
     }
 };
