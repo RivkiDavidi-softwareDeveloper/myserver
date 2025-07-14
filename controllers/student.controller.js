@@ -78,14 +78,14 @@ exports.addStudent = async (req, res) => {
 
         }
         //בדיקה אם קיים הורה אב
-        let father = await Parent.findOne({ where: { Pa_cell_phone: parentFData.Pa_cell_phone, Pa_name: parentFData.Pa_name, Pa_ID: parentFData.Pa_ID} }, { transaction: t });
+        let father = await Parent.findOne({ where: { Pa_cell_phone: parentFData.Pa_cell_phone, Pa_name: parentFData.Pa_name, Pa_ID: parentFData.Pa_ID } }, { transaction: t });
         if (!father) {
             // יצירת הורה אב
             father = await Parent.create(parentFData, { transaction: t });
 
         }
         //בדיקה אם קיים הורה אם
-        let mother = await Parent.findOne({ where: {Pa_cell_phone: parentMData.Pa_cell_phone, Pa_name: parentMData.Pa_name, Pa_ID: parentMData.Pa_ID } }, { transaction: t });
+        let mother = await Parent.findOne({ where: { Pa_cell_phone: parentMData.Pa_cell_phone, Pa_name: parentMData.Pa_name, Pa_ID: parentMData.Pa_ID } }, { transaction: t });
         if (!mother) {
             // יצירת הורה אם
             mother = await Parent.create(parentMData, { transaction: t });
@@ -138,7 +138,7 @@ exports.addStudent = async (req, res) => {
         // יצירת תלמיד עם קודי ההורים
         const student = await Student.create({
             ...studentData,
-            St_reception_date:St_reception_date,
+            St_reception_date: St_reception_date,
             St_father_code: father.Pa_code,
             St_mother_code: mother.Pa_code
         }, { transaction: t });
@@ -451,7 +451,7 @@ exports.importFromExcel = async (req, res) => {
             let Pa_cell_phone = row["פל' אב"];
             if (Pa_ID != null) {
                 // יצירת/עדכון הורה אב
-                father = await Parent.findOne({ where: { Pa_cell_phone:Pa_cell_phone, Pa_name: Pa_name, Pa_ID: Pa_ID } });
+                father = await Parent.findOne({ where: { Pa_cell_phone: Pa_cell_phone, Pa_name: Pa_name, Pa_ID: Pa_ID } });
                 if (father) {
                     father = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: father.Pa_code },
@@ -477,7 +477,7 @@ exports.importFromExcel = async (req, res) => {
             if (Pa_ID != null) {
 
                 // יצירת/עדכון הורה אם
-                mother = await Parent.findOne({ where: { Pa_cell_phone:Pa_cell_phone, Pa_name: Pa_name, Pa_ID: Pa_ID } });
+                mother = await Parent.findOne({ where: { Pa_cell_phone: Pa_cell_phone, Pa_name: Pa_name, Pa_ID: Pa_ID } });
                 if (mother) {
                     mother = await Parent.update(Pa_ID, Pa_name, Pa_cell_phone, Pa_work, {
                         where: { Pa_code: mother.Pa_code },
@@ -494,7 +494,7 @@ exports.importFromExcel = async (req, res) => {
             const St_father_code = father.Pa_code;
             const St_mother_code = mother.Pa_code;
             //פריט תלמיד
-            const St_ID = row["ת.ז*"];
+            let St_ID = row["ת.ז*"];
             const St_name = row["שם פרטי*"];
             const St_Fname = row["שם משפחה*"];
             const gender = row["מגדר*"];
@@ -618,7 +618,10 @@ exports.importFromExcel = async (req, res) => {
             const today = new Date();
             let St_reception_date = today.toISOString().split('T')[0];
 
-            if (!St_ID || !St_name || !St_Fname) continue;
+            // if (!St_ID || !St_name || !St_Fname) continue;
+            if (!St_name || !St_Fname) continue;
+            if (!St_ID)
+                St_ID =""
             // יצירת תלמיד עם קודי ההורים
             const student = await Student.create({
                 St_ID: St_ID, St_name: St_name, St_Fname: St_Fname, St_gender: St_gender, St_birthday: St_birthday
