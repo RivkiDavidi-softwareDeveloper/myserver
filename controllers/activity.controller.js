@@ -6,12 +6,13 @@ const { Op, fn, col, literal } = require("sequelize");
 exports.getAllActivities = async (req, res) => {
     try {
 
-        const { nameWorker, nameStudent, order, genderF, workerF, studentF, monthF, yearF, categoryF } = req.query;
+        const { nameWorker, nameStudent, order, genderF, workerF, workerStatusF, studentF, monthF, yearF, categoryF } = req.query;
         ;
 
         const genderOrder = Number(order);
         const genderFilter = Number(genderF);
         const workerFilter = Number(workerF);
+        const workerStatusFilter = Number(workerStatusF)
         const studentFilter = Number(studentF);
         const monthFilter = Number(monthF);
         const yearFilter = Number(yearF);
@@ -25,7 +26,7 @@ exports.getAllActivities = async (req, res) => {
             include: [
                 {
                     model: Worker,
-                    attributes: ["Wo_code", "Wo_name", "Wo_Fname", "Wo_gender"]
+                    attributes: ["Wo_code", "Wo_name", "Wo_Fname", "Wo_gender","Wo_status_code"]
                 },
                 {
                     model: StudentForActivity,
@@ -54,6 +55,12 @@ exports.getAllActivities = async (req, res) => {
         if (workerFilter !== -1) {
             activities = activities.filter(activity =>
                 activity.AFS_worker_code === workerFilter
+            );
+        }
+        // סינון לפי סטטוס עובד
+        if (workerStatusFilter !== 0) {
+            activities = activities.filter(activity =>
+                activity.Worker && activity.Worker.Wo_status_code === workerStatusFilter
             );
         }
         // סינון לפי חניך
@@ -230,8 +237,8 @@ exports.addActivity = async (req, res) => {
         }
 
         await t.commit();
-   /*      const io = req.app.get("socketio");
-        io.emit("activities-updated"); // משדר לכל הלקוחות */
+        /*      const io = req.app.get("socketio");
+             io.emit("activities-updated"); // משדר לכל הלקוחות */
 
         return res.status(201).json({ message: "הפעילות נוספה בהצלחה", AFS_code });
     } catch (error) {

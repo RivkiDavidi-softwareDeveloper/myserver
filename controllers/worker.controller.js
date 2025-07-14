@@ -5,10 +5,13 @@ const { Op, Sequelize } = require('sequelize');
 // שליפת כל העובדים 
 exports.getAllWorkers = async (req, res) => {
     try {
-        const { value, genderO, genderF, typeWO, typeWF } = req.query;
+        const { value, genderO, genderF, statusF, typeWO, typeWF } = req.query;
 
         const genderOrder = Number(genderO);
+        const statusFilter = Number(statusF)
+
         const genderFilter = Number(genderF);
+
         const typeWOrder = Number(typeWO);
         const typeWFilter = Number(typeWF);
 
@@ -20,7 +23,10 @@ exports.getAllWorkers = async (req, res) => {
         if (genderFilter !== 0) {
             listWorkers = listWorkers.filter(w => w.Wo_gender === genderFilter);
         }
-
+        // סינון לפי סטטוס
+        if (statusFilter !== 0) {
+            listWorkers = listWorkers.filter(w => w.Wo_status_code === statusFilter);
+        }
         // סינון לפי סוג עובד
         if (typeWFilter !== 0) {
             listWorkers = listWorkers.filter(w => w.Wo_type_worker === typeWFilter);
