@@ -21,12 +21,11 @@ exports.getAllActivities = async (req, res) => {
 
         const searchNameWorker = nameWorker ? nameWorker.toLowerCase() : null;
         const searchNameStudent = nameStudent ? nameStudent.toLowerCase() : null;
-
         let activities = await Activity.findAll({
             include: [
                 {
                     model: Worker,
-                    attributes: ["Wo_code", "Wo_name", "Wo_Fname", "Wo_gender","Wo_status_code"]
+                    attributes: ["Wo_code", "Wo_name", "Wo_Fname", "Wo_gender", "Wo_status_code"]
                 },
                 {
                     model: StudentForActivity,
@@ -42,7 +41,6 @@ exports.getAllActivities = async (req, res) => {
                 }
             ]
         });
-
 
         // סינון לפי מגדר
         if (genderFilter !== 0) {
@@ -131,15 +129,25 @@ exports.getAllActivities = async (req, res) => {
             });
         }
         //מיון
-        activities = activities.sort((a, b) => {
+        activities = activities.sort( (a, b) => {
             const workerA = `${a.Worker?.Wo_Fname || ''} ${a.Worker?.Wo_name || ''}`.toLowerCase();
             const workerB = `${b.Worker?.Wo_Fname || ''} ${b.Worker?.Wo_name || ''}`.toLowerCase();
 
             const dateA = new Date(a.AFS_date);
             const dateB = new Date(b.AFS_date);
 
-            const studentA = `${a.StudentForActivity?.Student?.St_Fname || ''} ${a.StudentForActivity?.Student?.St_name || ''}`.toLowerCase();
-            const studentB = `${b.StudentForActivity?.Student?.St_Fname || ''} ${b.StudentForActivity?.Student?.St_name || ''}`.toLowerCase();
+            /*         let listStudentForActivityAA = await StudentForActivity.findAll({ where: { SFA_code_activity: a.AFS_code } })
+                    let listStudentForActivityBB = await StudentForActivity.findAll({ where: { SFA_code_activity: b.AFS_code } })
+                    const studentAA = await Student.findOne({ where: { St_code: listStudentForActivityAA[0].SFA_code_student } })
+                    const studentBB = await Student.findOne({ where: { St_code: listStudentForActivityBB[0].SFA_code_student } })
+        
+                    const studentA = `${studentAA?.St_Fname || ''} ${studentAA?.St_name || ''}`.toLowerCase();
+                    const studentB = `${studentBB?.St_Fname || ''} ${studentBB?.St_name || ''}`.toLowerCase(); */
+            const studentA = `${a.StudentForActivities?.[0]?.Student?.St_Fname || ''} ${a.StudentForActivities?.[0]?.Student?.St_name || ''}`.toLowerCase();
+            const studentB = `${b.StudentForActivities?.[0]?.Student?.St_Fname || ''} ${b.StudentForActivities?.[0]?.Student?.St_name || ''}`.toLowerCase();
+
+            console.log(studentA + "תלמיד 1")
+            console.log(studentB + "2")
 
             let compareOrder;
             if (genderOrder === 0) {
@@ -154,7 +162,7 @@ exports.getAllActivities = async (req, res) => {
                     () => workerA.localeCompare(workerB),
                     () => studentA.localeCompare(studentB)
                 ];
-            } else {
+            } else if (genderOrder === 2) {
                 compareOrder = [
                     () => studentA.localeCompare(studentB),
                     () => dateB.getTime() - dateA.getTime(),

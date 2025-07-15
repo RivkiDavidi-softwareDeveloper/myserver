@@ -180,6 +180,8 @@ Student.associate = function (models) {
     Student.belongsTo(models.TypeRisk, { foreignKey: "St_risk_code" });
     Student.belongsTo(models.Synagogue, { foreignKey: "St_code_synagogue" });
     Student.belongsTo(models.Frequency, { foreignKey: "St_code_frequency" });
+    Student.hasMany(models.StudentForActivity, { foreignKey: 'SFA_code_student' });
+
 };
 
 module.exports = Student;
