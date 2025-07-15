@@ -129,25 +129,16 @@ exports.getAllActivities = async (req, res) => {
             });
         }
         //מיון
-        activities = activities.sort( (a, b) => {
+        activities = activities.sort((a, b) => {
             const workerA = `${a.Worker?.Wo_Fname || ''} ${a.Worker?.Wo_name || ''}`.toLowerCase();
             const workerB = `${b.Worker?.Wo_Fname || ''} ${b.Worker?.Wo_name || ''}`.toLowerCase();
 
             const dateA = new Date(a.AFS_date);
             const dateB = new Date(b.AFS_date);
 
-            /*         let listStudentForActivityAA = await StudentForActivity.findAll({ where: { SFA_code_activity: a.AFS_code } })
-                    let listStudentForActivityBB = await StudentForActivity.findAll({ where: { SFA_code_activity: b.AFS_code } })
-                    const studentAA = await Student.findOne({ where: { St_code: listStudentForActivityAA[0].SFA_code_student } })
-                    const studentBB = await Student.findOne({ where: { St_code: listStudentForActivityBB[0].SFA_code_student } })
-        
-                    const studentA = `${studentAA?.St_Fname || ''} ${studentAA?.St_name || ''}`.toLowerCase();
-                    const studentB = `${studentBB?.St_Fname || ''} ${studentBB?.St_name || ''}`.toLowerCase(); */
             const studentA = `${a.StudentForActivities?.[0]?.Student?.St_Fname || ''} ${a.StudentForActivities?.[0]?.Student?.St_name || ''}`.toLowerCase();
             const studentB = `${b.StudentForActivities?.[0]?.Student?.St_Fname || ''} ${b.StudentForActivities?.[0]?.Student?.St_name || ''}`.toLowerCase();
 
-            console.log(studentA + "תלמיד 1")
-            console.log(studentB + "2")
 
             let compareOrder;
             if (genderOrder === 0) {
@@ -257,67 +248,39 @@ exports.addActivity = async (req, res) => {
     }
 };
 
-/* exports.addActivity = async (req, res) => {
-    const t = await sequelize.transaction();
-    try {
-        const {
-            StudentForActivities,
-            CategoriesForActivities,
-            ...activityData
-        } = req.body;
- 
-        const cleanActivityData = clean(activityData, ['AFS_code']);
- 
-        // יצירת פעילות חדשה בתוך טרנזקציה
-        const newActivity = await Activity.create(cleanActivityData, { transaction: t });
-        const AFS_code = newActivity.AFS_code;
- 
-        // הוספת חניכים
-        if (Array.isArray(StudentForActivities)) {
-            const studentRecords = StudentForActivities.map(s =>
-                clean({
-                    SFA_code_activity: AFS_code,
-                    ...s
-                }, ['SFA_code'])
-            );
-            await StudentForActivity.bulkCreate(studentRecords, { transaction: t });
-        }
- 
-        // הוספת קטגוריות
-        if (Array.isArray(CategoriesForActivities)) {
-            const categoryRecords = CategoriesForActivities.map(c =>
-                clean({
-                    CFA_code_activity: AFS_code,
-                    ...c
-                }, ['CFA_code'])
-            );
-            await CategoriesForActivity.bulkCreate(categoryRecords, { transaction: t });
-        }
- 
-        // אישור הטרנזקציה
-        await t.commit();
-        return res.status(201).json({ message: "הפעילות נוספה בהצלחה", AFS_code });
-    } catch (error) {
-        // ביטול כל השינויים במידה ונכשלת אחת הפעולות
-        await t.rollback();
-        console.log(error)
-        return res.status(500).json({ error: error.message });
-    }
-};
- */
+//עדכון פעילות
+//פעילות
+//קטגוריות לפעילות
 
 exports.updateActivity = async (req, res) => {
     try {
         const { id } = req.params;
+        const codeActivity = Number(id)
         const [updated] = await Activity.update(req.body, {
-            where: { AFS_code: id }
+            where: { AFS_code: codeActivity }
         });
-        if (!updated) {
-            return res.status(404).json({ error: "Activity not found" });
+
+        const cleanedCategories = req.body.CategoriesForActivities.map(d => clean(d, ['CFA_code']));
+
+        // מחיקת קטגוריות קיימות
+        await CategoriesForActivity.destroy({
+            where: { CFA_code_activity: codeActivity }
+        });
+        // הוספת קטגוריות חדשות
+        if (cleanedCategories.length > 0) {
+            const category = cleanedCategories.map(d => ({
+                ...d,
+                CFA_code_activity:codeActivity
+            }));
+            await CategoriesForActivity.bulkCreate(category);
         }
+ /*        if (!updated) {
+            return res.status(404).json({ error: "Activity not found" });
+        } */
         const updatedActivity = await Activity.findByPk(id);
         res.json(updatedActivity);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: "Error updating activity" });
     }
 };

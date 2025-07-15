@@ -7,6 +7,7 @@ router.get("/", activityController.getAllActivities);
 
 router.post("/", activityController.addActivity);
 router.put("/:id", activityController.updateActivity);
+
 /* router.delete("/:id", activityController.deleteActivity);
  */router.delete("/:id", activityController.deleteActivities);
 
