@@ -41,6 +41,7 @@ const dashboardRoutes= require("./routes/dashboard.routes")
 require("dotenv").config();
 require("./cron/classUpgradeJob");
 require("./cron/birthday-checkerJob");
+require("./cron/weeklyEmailJob");
 
 const app = express();
 app.use(cors());

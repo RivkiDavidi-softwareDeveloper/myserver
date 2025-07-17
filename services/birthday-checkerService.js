@@ -43,19 +43,6 @@ function calculateHebrewAge(birthDay, birthMonth, birthYear, today) {
 
     return age;
 }
-/* function calculateHebrewAge(birthDay, birthMonth, birthYear, today) {
-    const hToday = new HDate(today);
-    let age = hToday.getFullYear() - birthYear;
-
-    // השוואה על בסיס תאריך עברי מדויק
-    const birthThisYear = new HDate(birthDay, birthMonth, hToday.getFullYear());
-
-    if (hToday.compare(birthThisYear) < 0) {
-        age--; // יום ההולדת עוד לא הגיע השנה
-    }
-
-    return age;
-}  */
 
 async function checkBirthdaysAndCreateTasks() {
     const allStudents = await Student.findAll();
@@ -84,8 +71,6 @@ async function checkBirthdaysAndCreateTasks() {
 
         if (!moment(gregorianDate).isSame(twoDaysLater, 'day')) continue;
 
-
-
         let age = null;
         try {
             const yearStr = parts[2];
@@ -93,7 +78,6 @@ async function checkBirthdaysAndCreateTasks() {
                 const yearNumber = hebrewYearStringToNumber(yearStr);
                 const originalHDate = new HDate(day, month, yearNumber);
                 const birthGDate = originalHDate.greg();
-                //    age = moment().diff(moment(birthGDate), 'years');
                 age = calculateHebrewAge(day, month, yearNumber, today);
 
             }
